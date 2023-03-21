@@ -6,16 +6,19 @@
 
 static struct command commands_buffer[MAX_COMMAND]; // the bound element is set argc == 0
 static char line_buffer[MAX_LENGTH];
+
+#ifdef SIGTTIN
+int jobcontrol = 1;
+#else
 int jobcontrol = 0;
+#endif
 
 int run_shell(void)
 {
     initialize_jobs();
     initialize_list();
-    if (setpgid(0, 0) >= 0)
-        jobcontrol = 1;
-    else
-        printf("cannot set pgid, jobs control does not support\n");
+    if (!jobcontrol)
+        printf("no job control in this platform\n");
     while (1) {
         printf("tsh>");
         if (!fgets(line_buffer, MAX_LENGTH, stdin))
