@@ -14,6 +14,8 @@ int run_shell(void)
     initialize_list();
     if (setpgid(0, 0))
         jobcontrol = 1;
+    else
+        printf("cannot set pgid, jobs control does not support\n");
     while (1) {
         printf("tsh>");
         if (!fgets(line_buffer, MAX_LENGTH, stdin))
