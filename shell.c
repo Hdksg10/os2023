@@ -339,11 +339,9 @@ void eval(const char * cmdline)
                 {
                     setpgid(getpid(), getppid());
                 }
-                char path[MAX_FN_LENGTH] = "/bin/";
-                strcat(path, cmd->argv[0]);
-                if (execve(path, cmd->argv, environ) < 0)
+                if (Execve(cmd->argv[0], cmd->argv, environ) < 0)
                 {
-                    printf("%s: Command not found.\n", path);
+                    printf("%s: Command not found.\n", cmd->argv[0]);
                     exit(0);
                 }
             }

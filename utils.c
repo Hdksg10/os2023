@@ -66,6 +66,23 @@ pid_t Fork()
     return pid;
 }
 
+int Execve(const char* path, char** argv, char** envp)
+{
+    int result;
+
+    char buffer[NAME_MAX];
+    char searching_path[3][16] = {"./", "/bin/", "/usr/bin"};
+
+    for (int i = 0; i < 3; i++)
+    {
+        strcpy(buffer, searching_path[i]);
+        strcat(buffer, path);
+        result = execve(buffer, argv, envp);
+    }
+
+    return result;
+}
+
 void Pipe(int pipefd[2])
 {
     if (pipe(pipefd) < 0)
