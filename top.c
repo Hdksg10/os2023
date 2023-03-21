@@ -16,18 +16,12 @@ static void process_info(char* pid, struct proc * p)
     FILE* fp;
     char buf[NAME_MAX + 1] = "";
     sprintf(buf, "/proc/%s/psinfo", pid);
+    printf("%s\n", buf);
     fp = fopen(buf, "r");
     p->name[0] = '\0';
     p->username[0] = '\0';
-    fscanf(fp, "%d %c %d"); // ignore version, type, endpt;
-    fscanf(fp, "%255s %c", p->name, &p->state);
-    fscanf(fp, "%d"); // ignore p_blocked
-    fscanf(fp, "%d %lu", &p->priority, &p->ticks);
-    fscanf(fp, "%*u %lu %lu"); // ignore cycles
-    fscanf(fp, "%lu", &p->memory);
-    fscanf(fp, "%*u %*u %*c %*d %*u"); 
-    fscanf(fp, "%u %*u", &p->uid);//ignore until p_nice
-    fscanf(fp, "%d", &p->nice);
+    fscanf(fp, "%*d %*c %*d %255s %c %*d %d %lu %*u %*lu %*lu %lu %*u %*u %*c %*d %*u %u %*u %d",
+           p->name, &(p->state), &(p->priority), &(p->ticks), &(p->memory), &(p->uid), &(p->nice));
     fclose(fp);
     strcpy(p->username, getpwuid(p->uid)->pw_name);
 }
@@ -41,12 +35,12 @@ void top()
     unsigned long cpu_ticks = 0;
     int i = 0;
     printf("TOP START\n");
-    for (dir = readdir(proc), i = 0; dir != NULL && i < PAGE_MAX; dir = readdir(proc), i++);
+    for (dir = readdir(proc), i = 0; dir != NULL && i < PAGE_MAX; dir = readdir(proc), i++)
     {
         if (dir->d_type == DT_DIR && strcmp(dir->d_name, ".") && strcmp(dir->d_name, ".."))
         {
             process_info(dir->d_name, &process[i]);
-            process[i].pid = atoi(dir->d_name);
+            process[i].pid = strtol(dir->d_name, NULL, 10);
             i++;
             //printf("%d %16s %d %luK %c %d %lf%% %s", atoi(dir->d_name), p.username, p.priority, p.memory / 1000, p.state, p.ticks/60, p.ticks);
         }
