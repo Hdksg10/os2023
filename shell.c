@@ -6,6 +6,7 @@
 
 static struct command commands_buffer[MAX_COMMAND]; // the bound element is set argc == 0
 static char line_buffer[MAX_LENGTH];
+int jobcontrol = 0;
 
 int run_shell(void)
 {
