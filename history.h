@@ -15,6 +15,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "utils.h"
+
 #define MAX_NODE 64
 
 struct input_node
@@ -25,17 +27,12 @@ struct input_node
     char* content;
 };
 
-static struct input_node * history_list_beg;
-static struct input_node * history_list_end;
-static int node_count;
-
 int initialize_list();
-
-static void remove_node();
 
 int add(char*);
 
 int free_list();
 
-int history(int);
+void history(int argc, char** argv);
+
 #endif //UNTITLED1_HISTORY_H

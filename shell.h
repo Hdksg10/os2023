@@ -25,20 +25,17 @@
 #include <ctype.h>
 #include <assert.h>
 #include <signal.h>
+#include <sys/wait.h>
 
 #include "command.h"
-#include "history.h"
 #include "utils.h"
+#include "builtincmd.h"
 
 #define MAX_LENGTH 1024
 #define MAX_FN_LENGTH 32
 #define MAX_COMMAND 64
 
-static char line_buffer[MAX_LENGTH];
-static struct command commands_buffer[MAX_COMMAND]; // the bound element is set argc == 0
-
-// which way should process group run, foreground or background?
-enum cgs{fg, bg};
+extern char **environ;
 
 int run_shell(void);
 
@@ -55,9 +52,28 @@ int run_shell(void);
  */
 int parse(const char*);
 
-void eval(void);
+/* eval - run all commands in commands_buffer.
+ * the routine fork a new process for each command in commands_buffer
+ * if fg is set, the routine(parent process) suspend and wait until all 
+ * child processes terminated.(see wait_fg)
+ * the routine maintainss a job list to track all jobs state.
+ * the routine assign fd stdin, stdout, stderr according to commands.fd
+ * the routine check whether the command is built-in command or not,
+ * use syscall execv to run not built-in command.
+ */
+void eval(const char*);
+
+/* builtin_command - check if a command is builtin and run it
+ * if command is builtin, the routine run it in current process(by prejudece call)
+ * if not, return 0 immediately
+ * if the builtin command is set to run background, the routine fork a new process
+ * and run it. Normally, it would not have any impact on current shell, same as bash
+ * the routine also assign file descriptor for builtin command
+ */
+int builtin_command(struct command *, int);
 
 void wait_fg(void);
+
 
 /* set_fd - set file descriptor from a null-terminated string
  * the routine search for substring ">>", "2>", "<", ">", open specified file,
@@ -74,6 +90,9 @@ void set_fd(char*, struct command*);
  */
 void set_argv(char*, struct command*);
 
+#ifdef SHELL_DEBUG
 /* check the content in commands_buffer */
 void check_buffer(void);
+#endif
+
 #endif //UNTITLED1_SHELL_H

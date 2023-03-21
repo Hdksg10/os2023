@@ -4,6 +4,10 @@
 
 #include "history.h"
 
+static struct input_node * history_list_beg;
+static struct input_node * history_list_end;
+static int node_count;
+
 int initialize_list()
 {
     node_count = 0;
@@ -39,7 +43,6 @@ int add(char * input)
     new_node->prev = NULL;
     new_node->next = history_list_beg;
     history_list_beg = new_node;
-
     new_node->content = malloc((input_len+1) * sizeof(char)); // null included
     if (!new_node->content)
         return -1;
@@ -64,16 +67,27 @@ int free_list()
     return 0;
 }
 
-int history(int n)
+static int list_history(int n)
 {
-    if (n > node_count)
-        return -1;
     int count;
     struct input_node * node = history_list_beg;
-    for (count = 1; count <= n; count++)
+    for (count = 1; count <= n && count <= node_count; count++)
     {
         printf("%s\n", node->content);
         node = node->next;
     }
     return 0;
+}
+
+void history(int argc, char** argv)
+{
+    if (argc < 2)
+        app_error("history: missing arguments");
+    
+    int n = atoi(argv[1]);
+    if (n <= 0)
+    {
+        app_error("history: incoreect argument");
+    }
+    list_history(n);
 }
