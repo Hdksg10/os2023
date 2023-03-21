@@ -36,6 +36,7 @@
 #define MAX_COMMAND 64
 
 extern char **environ;
+int jobcontrol = 0;
 
 int run_shell(void);
 

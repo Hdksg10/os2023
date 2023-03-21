@@ -11,6 +11,8 @@ int run_shell(void)
 {
     initialize_jobs();
     initialize_list();
+    if (setpgrp())
+        jobcontrol = 1;
     while (1) {
         printf("tsh>");
         if (!fgets(line_buffer, MAX_LENGTH, stdin))
@@ -363,7 +365,8 @@ void wait_fg()
     pid_t pid;
     while (maxjid())
     {
-        pid = waitpid(-getpid(), NULL, 0);
+        if (jobcontrol) pid = waitpid(-getpid(), NULL, 0);
+        else pid = waitpid(-1, NULL, 0);
         del_job(pid);
     }
 }
