@@ -11,7 +11,7 @@ int run_shell(void)
 {
     initialize_jobs();
     initialize_list();
-    if (setpgrp())
+    if (setpgid(0, 0))
         jobcontrol = 1;
     while (1) {
         printf("tsh>");
