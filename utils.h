@@ -13,6 +13,10 @@
 #include <string.h>
 #include <dirent.h>
 
+#ifndef NAME_MAX
+#define NAME_MAX 64
+#endif
+
 void unix_error(const char*);
 void app_error(const char*);
 
