@@ -12,7 +12,7 @@ int run_shell(void)
 {
     initialize_jobs();
     initialize_list();
-    if (setpgid(0, 0))
+    if (setpgid(0, 0) >= 0)
         jobcontrol = 1;
     else
         printf("cannot set pgid, jobs control does not support\n");
