@@ -15,7 +15,8 @@ static void process_info(char* pid, struct proc * p)
 {
     FILE* fp;
     char buf[NAME_MAX + 1] = "/proc/";
-    strcpy(buf+6, pid);
+    strcat(buf, pid);
+    strcat(buf, "/psinfo");
     fp = fopen(buf, "r");
     fscanf(fp, "%d %c %d"); // ignore version, type, endpt;
     fscanf(fp, "%255s %c", p->name, &p->state);
@@ -38,7 +39,7 @@ void top()
     char buf[256] = "/proc/";
     unsigned long cpu_ticks = 0;
     int i = 0;
-    prinf("TOP START\n");
+    printf("TOP START\n");
     while ((dir = readdir(proc)) && i < PAGE_MAX)
     {
         if (dir->d_type == DT_DIR && strcmp(dir->d_name, ".") && strcmp(dir->d_name, ".."))
