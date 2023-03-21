@@ -14,8 +14,8 @@ static void indentation(char* str, size_t length, char delim)
 static void process_info(char* pid, struct proc * p)
 {
     FILE* fp;
-    char buf[NAME_MAX + 1];
-    sscanf(buf, "/proc/%s/psinfo", pid);
+    char buf[NAME_MAX + 1] = "";
+    sprintf(buf, "/proc/%s/psinfo", pid);
     fp = fopen(buf, "r");
     fscanf(fp, "%d %c %d"); // ignore version, type, endpt;
     fscanf(fp, "%255s %c", p->name, &p->state);
