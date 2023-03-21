@@ -41,7 +41,7 @@ void top()
     unsigned long cpu_ticks = 0;
     int i = 0;
     printf("TOP START\n");
-    while ((dir = readdir(proc)) && i < PAGE_MAX)
+    for (dir = readdir(proc), i = 0; dir != NULL && i < PAGE_MAX; dir = readdir(proc), i++);
     {
         if (dir->d_type == DT_DIR && strcmp(dir->d_name, ".") && strcmp(dir->d_name, ".."))
         {
