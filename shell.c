@@ -6,19 +6,20 @@
 
 static struct command commands_buffer[MAX_COMMAND]; // the bound element is set argc == 0
 static char line_buffer[MAX_LENGTH];
-
-#ifdef SIGTTIN
 int jobcontrol = 1;
-#else
-int jobcontrol = 0;
-#endif
 
 int run_shell(void)
 {
     initialize_jobs();
     initialize_list();
-    if (!jobcontrol)
-        printf("no job control in this platform\n");
+    struct utsname buf;
+    if (uname(&buf) < 0)
+        unix_error("cannot get sys info");
+    if (strcmp(buf.sysname, "Minix") == 0)
+    {
+        jobcontrol = 0;
+        printf("No job control on platform:Minix\n");
+    }
     while (1) {
         printf("tsh>");
         if (!fgets(line_buffer, MAX_LENGTH, stdin))

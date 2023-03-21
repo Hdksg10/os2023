@@ -25,6 +25,7 @@
 #include <ctype.h>
 #include <assert.h>
 #include <signal.h>
+#include <sys/utsname.h>
 #include <sys/wait.h>
 
 #include "command.h"

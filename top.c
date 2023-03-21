@@ -13,16 +13,10 @@ static void indentation(char* str, size_t length, char delim)
 
 static void process_info(char* pid)
 {
-    DIR * process;
-    struct dirent * dir;
-
+    FILE* fp;
     char buf[NAME_MAX + 1] = "/proc/";
     strcpy(buf+6, pid);
-    process = opendir(buf);
-    while ((dir = readdir(process)))
-    {
-        
-    }
+
 }
 
 void top()
