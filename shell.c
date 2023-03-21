@@ -176,13 +176,13 @@ int builtin_command(struct command * cmd, int bg)
 {
     // builtin cmd list
     static char builtin_cmd[7][8] = {
-        [BUILTIN_CD]   "cd",
-        [BUILTIN_PWD]  "pwd", 
-        [BUILTIN_HIST] "history", 
-        [BUILTIN_EXIT] "exit", 
-        [BUILTIN_BG]   "bg", 
-        [BUILTIN_FG]   "fg", 
-        [BUILTIN_JOBS] "jobs",
+        [BUILTIN_CD]   = "cd",
+        [BUILTIN_PWD]  = "pwd", 
+        [BUILTIN_HIST] = "history", 
+        [BUILTIN_EXIT] = "exit", 
+        [BUILTIN_BG]   = "bg", 
+        [BUILTIN_FG]   = "fg", 
+        [BUILTIN_JOBS] = "jobs",
         };
     // default fd without redirection
     static const int fd_default[3] = {0, 2, 1};
