@@ -38,6 +38,7 @@
 
 extern char **environ;
 extern int jobcontrol;
+extern struct utsname sysinfo;
 
 int run_shell(void);
 
