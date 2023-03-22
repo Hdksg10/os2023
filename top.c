@@ -21,7 +21,6 @@ static void process_info(char* pid, struct proc * p)
     p->username[0] = '\0';
     fscanf(fp, "%*d %*c %*d %255s %c %*d %d %lu %*u %*lu %*lu %lu %*u %*u %*c %*d %*u %lu %*u %d",
            p->name, &(p->state), &(p->priority), &(p->ticks), &(p->memory), &(p->uid), &(p->nice));
-    printf("%s:%d\n", p->name, p->pid);
     fclose(fp);
     strcpy(p->username, getpwuid(p->uid)->pw_name);
 }
