@@ -56,7 +56,7 @@ void top()
     DIR * proc = opendir("/proc");
     struct dirent * dir;
     static struct proc process[PROC_MAX];
-    memset(process, 0, PROC_MAX * sizeof(process)); //init
+    memset(process, 0, PROC_MAX * sizeof(proc)); //init
     unsigned long cpu_ticks = 0;
     int i = 0;
     printf("TOP START\n");
