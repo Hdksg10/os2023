@@ -98,7 +98,7 @@ void top()
     {
         cpu_ticks += process[j].ticks;
     }
-
+    printf("%d\n", i);
     /* Sort the results */
     qsort(process, i, sizeof(proc), pcmpcpu);
 
