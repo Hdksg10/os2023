@@ -141,8 +141,8 @@ void run_top(int sortbycpu)
     memory = buf[0] * buf[1] / 1024;
     freemem = buf[0] * buf[2] / 1024;
     cachedmem = buf[0] * buf[4] / 1024;
+    printf("TOP START\n");
     printf("main memory: %luK total, %luK free, %luK cached\n", memory, freemem, cachedmem);
-    printf("press 'q' to quit\n");
     /* Read kernal info */
     unsigned proc_count;
     unsigned jobs_count;
@@ -153,7 +153,7 @@ void run_top(int sortbycpu)
         return;
     }
     printf("%u processes, %u jobs; sort order ('o' to cycle): %s\n", proc_count, jobs_count, displayorder[sortbycpu]);
-
+    printf("press 'q' to quit\n");
 
     /* Read process info */
     for (dir = readdir(proc), i = 0; dir != NULL && i < proc_count; dir = readdir(proc))
