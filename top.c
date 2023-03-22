@@ -53,7 +53,7 @@ void top()
     printf("PID USERNAME PRI NICE    SIZE STATE   TIME     CPU COMMAND\n");
     for (int j = 0; j < i; j++)
     {
-        printf("%3d %-8s %1d %4d %6luK %7c %4.0lf   %2.2lf%% %s\n", process[j].pid, process[j].username, process[j].priority, process[j].nice, process[j].memory / 1000, process[j].state, process[j].ticks/(double)60, process[j].ticks /cpu_ticks, process[j].name);
+        printf("%3d %-8s %1d %4d %6luK %7c %4d   %2.2lf%% %s\n", process[j].pid, process[j].username, process[j].priority, process[j].nice, process[j].memory / 1000, process[j].state, process[j].ticks/60, process[j].ticks / (double)cpu_ticks, process[j].name);
     }
 
 }
