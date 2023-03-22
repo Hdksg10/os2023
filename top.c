@@ -56,6 +56,7 @@ void top()
     DIR * proc = opendir("/proc");
     struct dirent * dir;
     static struct proc process[PROC_MAX];
+    memset(process, 0, PROC_MAX * sizeof(process)); //init
     unsigned long cpu_ticks = 0;
     int i = 0;
     printf("TOP START\n");
@@ -98,7 +99,7 @@ void top()
     {
         cpu_ticks += process[j].ticks;
     }
-    printf("%d\n", i);
+    //printf("%d\n", i);
     /* Sort the results */
     qsort(process, i, sizeof(proc), pcmpcpu);
 
