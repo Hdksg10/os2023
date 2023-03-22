@@ -193,7 +193,7 @@ void top()
     if (tty_cbreak(STDIN_FILENO) < 0)
     {
         printf("cannot set terminal state, run top failed\n");
-        return 0;
+        return;
     }
     while ((charnum = read(STDIN_FILENO, &ctrlchar, 1)) == 1)
     {
