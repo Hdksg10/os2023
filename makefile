@@ -8,7 +8,7 @@ OBJS = \
 	shell.o\
 	main.o
 
-CFLAGS = -Wall -O2
+CFLAGS = -Wall -O2 -Werror
 
 CFLAGS += -D SHELL_DEBUG
 

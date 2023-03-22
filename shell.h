@@ -25,7 +25,6 @@
 #include <ctype.h>
 #include <assert.h>
 #include <signal.h>
-#include <sys/utsname.h>
 #include <sys/wait.h>
 
 #include "command.h"
@@ -93,6 +92,8 @@ void set_fd(char*, struct command*);
  */
 void set_argv(char*, struct command*);
 
+/* shell_atexit - release memory when exit*/
+void shell_atexit();
 #ifdef SHELL_DEBUG
 /* check the content in commands_buffer */
 void check_buffer(void);

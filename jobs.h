@@ -8,8 +8,10 @@
  * list, foreground jobs now, to make sure the
  * parent process know its childs running state
  * and determine whether suspend or not
- * Since Minix does not support job control, shell 
- * doesn't implement fg & bg in that condition and
+ * Since Minix does not support job control, that
+ * is, cannot set process group id, the pgid would 
+ * always be 0, so when the shell find getpgid() fail,
+ * it won't allow fg & bg in that condition and
  * would not track background job's state
  */
 

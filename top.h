@@ -20,10 +20,10 @@ struct proc{
     unsigned long ticks;
     int priority;
     unsigned long uid;
-    char name[NAME_MAX];
+    char name[PROC_MAX];
     unsigned long memory;
     int nice;
-    char username[NAME_MAX];
+    char username[PROC_MAX];
     int pid;
 };
 

@@ -7,18 +7,16 @@
 static struct command commands_buffer[MAX_COMMAND]; // the bound element is set argc == 0
 static char line_buffer[MAX_LENGTH];
 int jobcontrol = 1;
-struct utsname sysinfo;
 
 int run_shell(void)
 {
     initialize_jobs();
     initialize_list();
-    if (uname(&sysinfo) < 0)
-        unix_error("cannot get system info");
-    if (strcmp(sysinfo.sysname, "Minix") == 0)
+    atexit(shell_atexit);
+    if (setpgid(0, getpid()))
     {
         jobcontrol = 0;
-        printf("No job control on platform:Minix\n");
+        printf("cannot get pgid: no job control on this platform\n");
     }
     while (1) {
         printf("tsh>");
@@ -380,6 +378,11 @@ void wait_fg()
         else pid = waitpid(-1, NULL, 0);
         del_job(pid);
     }
+}
+
+void shell_atexit()
+{
+    free_list();
 }
 
 #ifdef SHELL_DEBUG

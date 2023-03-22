@@ -6,18 +6,6 @@ static int ttysavefd = -1;
 static enum{RESET, CBREAK} ttystate = RESET;
 
 
-
-static void indentation(char* str, size_t length, char delim)
-{
-    size_t end = strlen(str);
-    if (end >= length) return;
-    for (size_t i = end; i < length; i++)
-    {
-        str[i] = delim;
-    }
-    str[length] = '\0';
-}
-
 /* put terminal into cbreak mode */
 static int tty_cbreak(int fd)
 {
@@ -102,21 +90,27 @@ static int pcmpmem(const void* p1, const void* p2)
         return -1;
 }
 
-static void process_info(char* pid, struct proc * p)
+static int process_info(char* pid, struct proc * p)
 {
     FILE* fp;
-    char buf[NAME_MAX + 1] = "";
+    char buf[PROC_MAX + 1] = "";
     sprintf(buf, "/proc/%s/psinfo", pid); // prepare psinfo file name
     fp = fopen(buf, "r");
     p->name[0] = '\0';
     p->username[0] = '\0';
-    fscanf(fp, "%*d %*c %*d %255s %c %*d %d %lu %*u %*lu %*lu %lu %*u %*u %*c %*d %*u %lu %*u %d",
-           p->name, &(p->state), &(p->priority), &(p->ticks), &(p->memory), &(p->uid), &(p->nice));
+    if (fscanf(fp, "%*d %*c %*d %255s %c %*d %d %lu %*u %*u %*u %lu %*u %*u %*c %*d %*u %lu %*u %d",
+           p->name, &(p->state), &(p->priority), &(p->ticks), &(p->memory), &(p->uid), &(p->nice))
+        < 7)
+    {
+        printf("cannot read psinfo file\n");
+        return -1;
+    }
     fclose(fp);
     strcpy(p->username, getpwuid(p->uid)->pw_name);
+    return 0;
 }
 
-void run_top(int sortbycpu)
+static int run_top(int sortbycpu)
 {
     /* file and dir pointer */
     FILE* meminfo;
@@ -137,7 +131,11 @@ void run_top(int sortbycpu)
     unsigned long freemem;
     unsigned long cachedmem;
     unsigned long buf[5]; // read meminfo buffer
-    fscanf(meminfo, "%lu %lu %lu %lu %lu", &(buf[0]), &(buf[1]), &(buf[2]), &(buf[3]), &(buf[4]));
+    if (fscanf(meminfo, "%lu %lu %lu %lu %lu", &(buf[0]), &(buf[1]), &(buf[2]), &(buf[3]), &(buf[4])) < 5 )
+    {
+        printf("cannot read meminfo file\n");
+        return -1;
+    }
     memory = buf[0] * buf[1] / 1024;
     freemem = buf[0] * buf[2] / 1024;
     cachedmem = buf[0] * buf[4] / 1024;
@@ -146,11 +144,15 @@ void run_top(int sortbycpu)
     /* Read kernal info */
     unsigned proc_count;
     unsigned jobs_count;
-    fscanf(kinfo, "%u %u", &proc_count, &jobs_count);
+    if (fscanf(kinfo, "%u %u", &proc_count, &jobs_count) < 2)
+    {
+        printf("cannot read kinfo file\n");
+        return -1;
+    }
     if (proc_count >= PROC_MAX)
     {
         printf("too many processes!\n");
-        return;
+        return -1;
     }
     printf("%u processes, %u jobs; sort order ('o' to cycle): %s\n", proc_count, jobs_count, displayorder[sortbycpu]);
     printf("press 'q' to quit\n");
@@ -161,7 +163,11 @@ void run_top(int sortbycpu)
         if (dir->d_type == DT_DIR && strcmp(dir->d_name, ".") && strcmp(dir->d_name, ".."))
         {
             process[i].pid = strtol(dir->d_name, NULL, 10);
-            process_info(dir->d_name, &process[i]);
+            if (process_info(dir->d_name, &process[i]) < 0)
+            {
+                printf("cannot get process info, pid=%d\n", process[i].pid);
+                return -1;
+            }
             i++;
         }
     }
@@ -183,6 +189,7 @@ void run_top(int sortbycpu)
     {
         printf("%3d %-8s %1d %4d    %6luK %7c %3lu      %2.2lf%% %s\n", process[j].pid, process[j].username, process[j].priority, process[j].nice, process[j].memory / 1000, process[j].state, process[j].ticks/60, process[j].ticks / (double)cpu_ticks, process[j].name);
     }
+    return 0;
 }
 
 void top()
@@ -196,14 +203,16 @@ void top()
         printf("cannot set terminal state, run top failed\n");
         return;
     }
-    run_top(order);
+    if(run_top(order) < 0)
+        return;
     while ((charnum = read(STDIN_FILENO, &ctrlchar, 1)) == 1)
     {
         switch (ctrlchar)
         {
         case 'o':
             order = !order;
-            run_top(order);
+            if(run_top(order) < 0)
+                return;
             break;
         case 'q':
             if (tty_reset(STDIN_FILENO) < 0 )  
@@ -211,7 +220,8 @@ void top()
             return;
             break;
         default:
-            run_top(order);
+            if(run_top(order) < 0)
+                return;
             break;
         }
     }
