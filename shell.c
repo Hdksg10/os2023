@@ -13,7 +13,7 @@ int run_shell(void)
     initialize_jobs();
     initialize_list();
     atexit(shell_atexit);
-    if (setpgid(0, getpid()))
+    if (getpgrp() != getpid())
     {
         jobcontrol = 0;
         printf("cannot get pgid: no job control on this platform\n");
