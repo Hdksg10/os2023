@@ -56,7 +56,7 @@ void top()
     DIR * proc = opendir("/proc");
     struct dirent * dir;
     static struct proc process[PROC_MAX];
-    memset(process, 0, PROC_MAX * sizeof(proc)); //init
+    memset(process, 0, PROC_MAX * sizeof(struct proc)); //init
     unsigned long cpu_ticks = 0;
     int i = 0;
     printf("TOP START\n");
@@ -101,7 +101,7 @@ void top()
     }
     //printf("%d\n", i);
     /* Sort the results */
-    qsort(process, i, sizeof(proc), pcmpcpu);
+    qsort(process, i, sizeof(struct proc), pcmpcpu);
 
     /* Print head */
     printf("PID USERNAME PRI NICE    SIZE STATE   TIME     CPU COMMAND\n");
