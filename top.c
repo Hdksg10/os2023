@@ -113,18 +113,10 @@ void top()
 
 int main()
 {
-    char terminalop;
-    while (scanf("%c", &terminalop))
-    {
-        switch (terminalop)
-        {
-        case 'o':
-            /* code */
-            break;
-        default:
-            top();
-            break;
-        }
+    while (1)
+    {   
+        sleep(5);
+        top();
     }
     top();
     return 0;
