@@ -5,10 +5,7 @@ static struct termios save_termios;
 static int ttysavefd = -1;
 static enum{RESET, CBREAK} ttystate = RESET;
 
-/* file and dir pointer */
-static FILE* meminfo;
-static FILE* kinfo;
-static DIR* proc;
+
 
 static void indentation(char* str, size_t length, char delim)
 {
@@ -121,6 +118,10 @@ static void process_info(char* pid, struct proc * p)
 
 void run_top(int sortbycpu)
 {
+    /* file and dir pointer */
+    FILE* meminfo;
+    FILE* kinfo;
+    DIR* proc;
     meminfo = fopen("/proc/meminfo", "r");
     kinfo = fopen("/proc/kinfo", "r");
     proc = opendir("/proc");
@@ -141,7 +142,7 @@ void run_top(int sortbycpu)
     freemem = buf[0] * buf[2] / 1024;
     cachedmem = buf[0] * buf[4] / 1024;
     printf("main memory: %luK total, %luK free, %luK cached\n", memory, freemem, cachedmem);
-
+    printf("press 'q' to quit\n");
     /* Read kernal info */
     unsigned proc_count;
     unsigned jobs_count;
@@ -180,7 +181,7 @@ void run_top(int sortbycpu)
     /* Print proc info */
     for (int j = 0; j < PAGE_MAX; j++)
     {
-        printf("%3d %-8s %1d %4d %6luK %7c %3lu      %2.2lf%% %s\n", process[j].pid, process[j].username, process[j].priority, process[j].nice, process[j].memory / 1000, process[j].state, process[j].ticks/60, process[j].ticks / (double)cpu_ticks, process[j].name);
+        printf("%3d %-8s %1d %4d    %6luK %7c %3lu      %2.2lf%% %s\n", process[j].pid, process[j].username, process[j].priority, process[j].nice, process[j].memory / 1000, process[j].state, process[j].ticks/60, process[j].ticks / (double)cpu_ticks, process[j].name);
     }
 }
 
