@@ -16,12 +16,13 @@ static void process_info(char* pid, struct proc * p)
     FILE* fp;
     char buf[NAME_MAX + 1] = "";
     sprintf(buf, "/proc/%s/psinfo", pid);
-    printf("%s\n", buf);
+    //printf("%s\n", buf);
     fp = fopen(buf, "r");
     p->name[0] = '\0';
     p->username[0] = '\0';
     fscanf(fp, "%*d %*c %*d %255s %c %*d %d %lu %*u %*lu %*lu %lu %*u %*u %*c %*d %*u %lu %*u %d",
            p->name, &(p->state), &(p->priority), &(p->ticks), &(p->memory), &(p->uid), &(p->nice));
+    printf("%s:%d", p->name, p->pid);
     fclose(fp);
     strcpy(p->username, getpwuid(p->uid)->pw_name);
 }
@@ -39,8 +40,8 @@ void top()
     {
         if (dir->d_type == DT_DIR && strcmp(dir->d_name, ".") && strcmp(dir->d_name, ".."))
         {
-            process_info(dir->d_name, &process[i]);
             process[i].pid = strtol(dir->d_name, NULL, 10);
+            process_info(dir->d_name, &process[i]);
             //printf("%d\n", process[i].pid);
             i++;
             //printf("%d %16s %d %luK %c %d %lf%% %s", atoi(dir->d_name), p.username, p.priority, p.memory / 1000, p.state, p.ticks/60, p.ticks);
