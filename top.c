@@ -11,6 +11,26 @@ static void indentation(char* str, size_t length, char delim)
     str[length] = '\0';
 }
 
+int pcmpcpu(const struct proc* p1, const struct proc* p2)
+{
+    if (p1->ticks < p2->ticks)
+        return -1;
+    else if (p1->ticks == p2->ticks)
+        return 0;
+    else 
+        return 1;
+}
+
+int pcmpmem(const struct proc* p1, const struct proc* p2)
+{
+    if (p1->memory < p2->memory)
+        return -1;
+    else if (p1->memory == p2->memory)
+        return 0;
+    else 
+        return 1;
+}
+
 static void process_info(char* pid, struct proc * p)
 {
     FILE* fp;
@@ -31,7 +51,7 @@ void top()
     FILE* kinfo = fopen("/proc/kinfo", "r");
     DIR * proc = opendir("/proc");
     struct dirent * dir;
-    struct proc process[PROC_MAX];
+    static struct proc process[PROC_MAX];
     unsigned long cpu_ticks = 0;
     int i = 0;
     printf("TOP START\n");
@@ -75,14 +95,16 @@ void top()
         cpu_ticks += process[j].ticks;
     }
 
+    /* Sort the results */
+    qsort(process, i, sizeof(proc), pcmpcpu);
+
     /* Print head */
     printf("PID USERNAME PRI NICE    SIZE STATE   TIME     CPU COMMAND\n");
     /* Print proc info */
-    for (int j = 0; j < i; j++)
+    for (int j = 0; j < PAGE_MAX; j++)
     {
         printf("%3d %-8s %1d %4d %6luK %7c %3lu      %2.2lf%% %s\n", process[j].pid, process[j].username, process[j].priority, process[j].nice, process[j].memory / 1000, process[j].state, process[j].ticks/60, process[j].ticks / (double)cpu_ticks, process[j].name);
     }
-
 }
 
 int main()
