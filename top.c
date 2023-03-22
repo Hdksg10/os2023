@@ -206,7 +206,8 @@ void top()
             run_top(order);
             break;
         case 'q':
-            tty_reset(STDIN_FILENO);
+            if (tty_reset(STDIN_FILENO) < 0 )  
+                printf("cannot reset\n");
             return;
             break;
         default:
@@ -214,6 +215,7 @@ void top()
             break;
         }
     }
-    tty_reset(STDIN_FILENO); // won't reach
+    if (tty_reset(STDIN_FILENO) < 0 )  
+        printf("cannot reset\n");
     return;
 }
