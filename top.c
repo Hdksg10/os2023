@@ -113,11 +113,6 @@ void top()
 
 int main()
 {
-    while (1)
-    {   
-        sleep(5);
-        top();
-    }
     top();
     return 0;
 }
