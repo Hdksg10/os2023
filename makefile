@@ -2,6 +2,7 @@ OBJS = \
 	history.o\
 	wpath.o\
 	jobs.o\
+	top.o\
 	builtin.o\
 	utils.o\
 	shell.o\
@@ -31,6 +32,9 @@ wpath.o: utils.h wpath.h wpath.c
 
 jobs.o : utils.h jobs.h jobs.c
 	${CC} ${CFLAGS} -c jobs.c
+
+top.o : utils.h top.h top.c
+	${CC} ${CFLAGS} -c top.c
 
 utils.o: utils.c utils.h
 	${CC} ${CFLAGS} -c utils.c

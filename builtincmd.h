@@ -8,6 +8,7 @@
 #include "history.h"
 #include "wpath.h"
 #include "jobs.h"
+#include "top.h"
 
 // builtin command code
 #define BUILTIN_CD   0 //wpath.h

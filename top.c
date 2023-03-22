@@ -217,9 +217,3 @@ void top()
     tty_reset(STDIN_FILENO); // won't reach
     return;
 }
-
-int main()
-{
-    top();
-    return 0;
-}

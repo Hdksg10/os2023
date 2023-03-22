@@ -184,7 +184,7 @@ void set_argv(char * cmdline, struct command * command)
 int builtin_command(struct command * cmd, int bg)
 {
     // builtin cmd list
-    static char builtin_cmd[7][8] = {
+    static char builtin_cmd[8][8] = {
         [BUILTIN_CD]   = "cd",
         [BUILTIN_PWD]  = "pwd", 
         [BUILTIN_HIST] = "history", 
@@ -192,6 +192,7 @@ int builtin_command(struct command * cmd, int bg)
         [BUILTIN_BG]   = "bg", 
         [BUILTIN_FG]   = "fg", 
         [BUILTIN_JOBS] = "jobs",
+        [BUILTIN_TOP] = "top",
         };
     // default fd without redirection
     static const int fd_default[3] = {0, 2, 1};
@@ -237,7 +238,7 @@ int builtin_command(struct command * cmd, int bg)
     }
 
     int cmd_index;
-    for (cmd_index = 0; cmd_index < 7; cmd_index++) // 7 builtin cmd implyed
+    for (cmd_index = 0; cmd_index < 8; cmd_index++) // 7 builtin cmd implyed
     {
         if (strcmp(argv[0], builtin_cmd[cmd_index]) == 0)
         {
@@ -261,6 +262,8 @@ int builtin_command(struct command * cmd, int bg)
     case BUILTIN_JOBS:
         list_jobs();
         break;
+    case BUILTIN_TOP:
+        top();
     default:
         res = 0;
         break;
