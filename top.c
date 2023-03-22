@@ -114,7 +114,7 @@ void top()
 int main()
 {
     char terminalop;
-    while (scanf("%c"), &terminalop)
+    while (scanf("%c", &terminalop))
     {
         switch (terminalop)
         {
@@ -122,6 +122,7 @@ int main()
             /* code */
             break;
         default:
+            top();
             break;
         }
     }
