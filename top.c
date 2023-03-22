@@ -121,6 +121,9 @@ static void process_info(char* pid, struct proc * p)
 
 void run_top(int sortbycpu)
 {
+    meminfo = fopen("/proc/meminfo", "r");
+    kinfo = fopen("/proc/kinfo", "r");
+    proc = opendir("/proc");
     static struct dirent * dir;
     static struct proc process[PROC_MAX];
     static char displayorder[2][7] = {"memory", "CPU"};
@@ -186,15 +189,13 @@ void top()
     char ctrlchar;
     int charnum;
     int order = 1;
-    meminfo = fopen("/proc/meminfo", "r");
-    kinfo = fopen("/proc/kinfo", "r");
-    proc = opendir("/proc");
     atexit(tty_atexit);
     if (tty_cbreak(STDIN_FILENO) < 0)
     {
         printf("cannot set terminal state, run top failed\n");
         return;
     }
+    run_top(order);
     while ((charnum = read(STDIN_FILENO, &ctrlchar, 1)) == 1)
     {
         switch (ctrlchar)
