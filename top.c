@@ -1,5 +1,9 @@
 #include "top.h"
 
+static struct termios save_termios;
+static int ttysavefd = -1;
+static enum{RESET, CBREAK} ttystate = RESET;
+
 static void indentation(char* str, size_t length, char delim)
 {
     size_t end = strlen(str);
@@ -9,6 +13,66 @@ static void indentation(char* str, size_t length, char delim)
         str[i] = delim;
     }
     str[length] = '\0';
+}
+
+/* put terminal into cbreak mode */
+static int tty_cbreak(int fd)
+{
+    int err;
+    struct termios buf;
+
+    /* Check function is called corectly*/
+    if (ttystate != RESET){
+        errno = EINVAL;
+        return -1;
+    }
+    /* Open terminal arrtibutes*/
+    if (tcgetattr(fd, &buf) < 0)
+        return -1;
+    save_termios = buf; //copy of current attr;
+
+    /* Echo off, canonical mode off */
+    buf.c_lflag &= ~(ECHO| ICANON);
+
+    /* Terminal return 1 byte at time, no timer*/
+    buf.c_cc[VMIN] = 1;
+    buf.c_cc[VTIME] = 0;
+    if (tcsetattr(fd, TCSAFLUSH, &buf) < 0)
+        return -1;
+    
+    /* Verify all the changes success */
+    if (tcgetattr(fd, &buf) < 0){
+        err = errno;
+        tcsetattr(fd, TCSAFLUSH, &save_termios);
+        errno = err;
+        return -1;
+    }
+    if ((buf.c_lflag & (ECHO| ICANON)) || buf.c_cc[VMIN] != 1 || buf.c_cc[VTIME] != 0){
+        // partial success
+        tcsetattr(fd, TCSAFLUSH, &save_termios);
+        errno = EINVAL;
+        return -1;
+    }
+
+    ttystate = CBREAK;
+    ttysavefd = fd;
+    return 0;
+}
+
+int tty_reset(int fd)
+{
+    if (ttystate == RESET) // doesnot need
+        return 0;
+    if (tcsetattr(fd, TCSAFLUSH, &save_termios) < 0)
+        return -1;
+    ttystate = RESET;
+    return 0;
+}
+
+void tty_atexit(void) // restore when exit
+{
+    if (ttysavefd >= 0)
+        tty_reset(ttysavefd);
 }
 
 int pcmpcpu(const void* p1, const void* p2)
@@ -114,6 +178,30 @@ void top()
 
 int main()
 {
-    top();
+    char ctrlchar;
+    int charnum;
+    atexit(tty_atexit);
+    if (tty_cbreak(STDIN_FILENO) < 0)
+    {
+        printf("cannot set terminal state, run top failed\n");
+        return 0;
+    }
+    while ((charnum = read(STDIN_FILENO, &ctrlchar, 1)) == 1)
+    {
+        switch (ctrlchar)
+        {
+        case 'o':
+            printf("order!\n");
+            break;
+        case 'q':
+            tty_reset(STDIN_FILENO);
+            return 0;
+            break;
+        default:
+            top();
+            break;
+        }
+    }
+    tty_reset(STDIN_FILENO); // won't reach
     return 0;
 }

@@ -7,7 +7,8 @@
 #include <dirent.h>
 #include <pwd.h>
 #include <sys/stat.h>
-
+#include <signal.h>
+#include <termios.h>
 
 #include "utils.h"
 #define PAGE_MAX 32
