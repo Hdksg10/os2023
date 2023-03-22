@@ -41,6 +41,7 @@ void top()
         {
             process_info(dir->d_name, &process[i]);
             process[i].pid = strtol(dir->d_name, NULL, 10);
+            printf("%d\n", process[i].pid);
             i++;
             //printf("%d %16s %d %luK %c %d %lf%% %s", atoi(dir->d_name), p.username, p.priority, p.memory / 1000, p.state, p.ticks/60, p.ticks);
         }
@@ -51,7 +52,7 @@ void top()
     }
     for (int j = 0; j < i; j++)
     {
-        printf("%d %16s %d %luK %c %d %lf%% %s\n", process[j].pid, process[j].username, process[j].priority, process[j].memory / 1000, process[j].state, process[j].ticks/60, process[j].ticks / (double) cpu_ticks, process[j].name);
+        //printf("%d %16s %d %luK %c %d %lf%% %s\n", process[j].pid, process[j].username, process[j].priority, process[j].memory / 1000, process[j].state, process[j].ticks/60, process[j].ticks / (double) cpu_ticks, process[j].name);
     }
 
 }
