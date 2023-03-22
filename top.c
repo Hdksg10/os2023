@@ -1,8 +1,14 @@
 #include "top.h"
 
+/* terminal control variable*/
 static struct termios save_termios;
 static int ttysavefd = -1;
 static enum{RESET, CBREAK} ttystate = RESET;
+
+/* file and dir pointer */
+static FILE* meminfo;
+static FILE* kinfo;
+static DIR* proc;
 
 static void indentation(char* str, size_t length, char delim)
 {
@@ -59,7 +65,7 @@ static int tty_cbreak(int fd)
     return 0;
 }
 
-int tty_reset(int fd)
+static int tty_reset(int fd)
 {
     if (ttystate == RESET) // doesnot need
         return 0;
@@ -69,13 +75,13 @@ int tty_reset(int fd)
     return 0;
 }
 
-void tty_atexit(void) // restore when exit
+static void tty_atexit(void) // restore when exit
 {
     if (ttysavefd >= 0)
         tty_reset(ttysavefd);
 }
 
-int pcmpcpu(const void* p1, const void* p2)
+static int pcmpcpu(const void* p1, const void* p2)
 {
     struct proc * arg1 = (struct proc *)p1;
     struct proc * arg2 = (struct proc *)p2;
@@ -87,7 +93,7 @@ int pcmpcpu(const void* p1, const void* p2)
         return -1;
 }
 
-int pcmpmem(const void* p1, const void* p2)
+static int pcmpmem(const void* p1, const void* p2)
 {
     struct proc * arg1 = (struct proc *)p1;
     struct proc * arg2 = (struct proc *)p2;
@@ -113,17 +119,14 @@ static void process_info(char* pid, struct proc * p)
     strcpy(p->username, getpwuid(p->uid)->pw_name);
 }
 
-void top()
+void run_top(int sortbycpu)
 {
-    FILE* meminfo = fopen("/proc/meminfo", "r");
-    FILE* kinfo = fopen("/proc/kinfo", "r");
-    DIR * proc = opendir("/proc");
-    struct dirent * dir;
+    static struct dirent * dir;
     static struct proc process[PROC_MAX];
+    static char displayorder[2][7] = {"memory", "CPU"};
     memset(process, 0, PROC_MAX * sizeof(struct proc)); //init
     unsigned long cpu_ticks = 0;
     int i = 0;
-    printf("TOP START\n");
 
     /* Read memeory info */
     unsigned long memory;
@@ -145,7 +148,7 @@ void top()
         printf("too many processes!\n");
         return;
     }
-    printf("%u processes, %u jobs\n", proc_count, jobs_count);
+    printf("%u processes, %u jobs; sort order ('o' to cycle): %s\n", proc_count, jobs_count, displayorder[sortbycpu]);
 
 
     /* Read process info */
@@ -163,9 +166,11 @@ void top()
     {
         cpu_ticks += process[j].ticks;
     }
-    //printf("%d\n", i);
     /* Sort the results */
-    qsort(process, i, sizeof(struct proc), pcmpcpu);
+    if (sortbycpu)
+        qsort(process, i, sizeof(struct proc), pcmpcpu);
+    else
+        qsort(process, i, sizeof(struct proc), pcmpmem);
 
     /* Print head */
     printf("PID USERNAME PRI NICE    SIZE STATE   TIME     CPU COMMAND\n");
@@ -176,10 +181,14 @@ void top()
     }
 }
 
-int main()
+void top()
 {
     char ctrlchar;
     int charnum;
+    int order = 1;
+    meminfo = fopen("/proc/meminfo", "r");
+    kinfo = fopen("/proc/kinfo", "r");
+    proc = opendir("/proc");
     atexit(tty_atexit);
     if (tty_cbreak(STDIN_FILENO) < 0)
     {
@@ -191,17 +200,24 @@ int main()
         switch (ctrlchar)
         {
         case 'o':
-            printf("order!\n");
+            order = !order;
+            run_top(order);
             break;
         case 'q':
             tty_reset(STDIN_FILENO);
-            return 0;
+            return;
             break;
         default:
-            top();
+            run_top(order);
             break;
         }
     }
     tty_reset(STDIN_FILENO); // won't reach
+    return;
+}
+
+int main()
+{
+    top();
     return 0;
 }
