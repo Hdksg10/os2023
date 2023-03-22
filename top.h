@@ -9,7 +9,8 @@
 
 
 #include "utils.h"
-#define PAGE_MAX 64
+#define PAGE_MAX 32
+#define PROC_MAX 512
 
 
 struct proc{
