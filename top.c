@@ -11,24 +11,28 @@ static void indentation(char* str, size_t length, char delim)
     str[length] = '\0';
 }
 
-int pcmpcpu(const struct proc* p1, const struct proc* p2)
+int pcmpcpu(const void* p1, const void* p2)
 {
-    if (p1->ticks < p2->ticks)
-        return -1;
-    else if (p1->ticks == p2->ticks)
+    struct proc * arg1 = (struct proc *)p1;
+    struct proc * arg2 = (struct proc *)p2;
+    if (arg1->ticks < arg2->ticks)
+        return 1;
+    else if (arg1->ticks == arg2->ticks)
         return 0;
     else 
-        return 1;
+        return -1;
 }
 
-int pcmpmem(const struct proc* p1, const struct proc* p2)
+int pcmpmem(const void* p1, const void* p2)
 {
-    if (p1->memory < p2->memory)
-        return -1;
-    else if (p1->memory == p2->memory)
+    struct proc * arg1 = (struct proc *)p1;
+    struct proc * arg2 = (struct proc *)p2;
+    if (arg1->memory < arg2->memory)
+        return 1;
+    else if (arg1->memory == arg2->memory)
         return 0;
     else 
-        return 1;
+        return -1;
 }
 
 static void process_info(char* pid, struct proc * p)
@@ -109,6 +113,18 @@ void top()
 
 int main()
 {
+    char terminalop;
+    while (scanf("%c"), &terminalop)
+    {
+        switch (terminalop)
+        {
+        case 'o':
+            /* code */
+            break;
+        default:
+            break;
+        }
+    }
     top();
     return 0;
 }
