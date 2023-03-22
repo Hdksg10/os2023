@@ -264,6 +264,7 @@ int builtin_command(struct command * cmd, int bg)
         break;
     case BUILTIN_TOP:
         top();
+        break;
     default:
         res = 0;
         break;
