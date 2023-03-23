@@ -36,7 +36,8 @@
 #define MAX_COMMAND 64
 
 extern char **environ;
-extern int jobcontrol;
+/* global mask, whether the os support job control */
+extern int jobcontrol; // defined in jobs.c
 extern struct utsname sysinfo;
 
 int run_shell(void);

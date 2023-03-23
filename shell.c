@@ -6,16 +6,15 @@
 
 static struct command commands_buffer[MAX_COMMAND]; // the bound element is set argc == 0
 static char line_buffer[MAX_LENGTH];
-int jobcontrol = 1;
+
 
 int run_shell(void)
 {
     initialize_jobs();
     initialize_list();
     atexit(shell_atexit);
-    if (getpgrp() != getpid())
+    if (!jobcontrol)
     {
-        jobcontrol = 0;
         printf("cannot get pgid: no job control on this platform\n");
     }
     while (1) {
@@ -178,7 +177,7 @@ void set_argv(char * cmdline, struct command * command)
     command->argv[command->argc] = 0;
 }
 
-// TODO: simplify
+// TODO: need to rebuild
 int builtin_command(struct command * cmd, int bg)
 {
     // builtin cmd list
@@ -287,7 +286,7 @@ int builtin_command(struct command * cmd, int bg)
 
 static void closefd()
 {
-    struct command * cmd; //current working
+    struct command * cmd; //current working cmd
     for (cmd = commands_buffer; cmd->argc; cmd++)
     {
             for (int fd_index = 0; fd_index < 3; fd_index++)
@@ -316,6 +315,8 @@ void eval(const char * cmdline)
     static const int fd_default[3] = {0, 2, 1};
 
     struct command * cmd; // current working cmd
+    pid_t pgid = 0; // job pgid
+    int count = 0; // job process count
     for (cmd = commands_buffer; cmd->argc; cmd++)
     {
         pid_t pid;
@@ -343,12 +344,12 @@ void eval(const char * cmdline)
                 if (bg) // set background handler and fd
                 {
                     signal(SIGCHLD, SIG_IGN);
-                    setpgid(0, 0);
+                    setpgid(getpid(), pgid);
                     /* block termianl in and out */
                 }
                 else // set foreground group
                 {
-                    setpgid(getpid(), getppid());
+                    setpgid(getpid(), pgid);
                 }
                 if (Execve(cmd->argv[0], cmd->argv, environ) < 0)
                 {
@@ -356,14 +357,19 @@ void eval(const char * cmdline)
                     exit(0);
                 }
             }
-            add_job(pid, bg+1, line_buffer);
+            /* parent process run here */
+            count++;
+            pgid = pgid == 0 ? pid:pgid;
+            printf("%d:%d\n", pid, pgid);
+            add_job(pgid, bg+1, line_buffer, count);
             if (!bg) // set foreground group
             {
-                setpgid(pid, getpid());
+                setpgid(pid, pgid);
             }
         }
     }
     closefd(); // close unused fd
+    list_jobs();
     if (!bg)
         wait_fg();
 
@@ -372,17 +378,19 @@ void eval(const char * cmdline)
 void wait_fg()
 {
     pid_t pid;
-    while (maxjid())
+    struct job* fg_job = get_fg();
+    while ((fg_job = get_fg()))
     {
-        if (jobcontrol) pid = waitpid(-getpid(), NULL, 0);
+        if (jobcontrol) pid = waitpid(-fg_job->pgid, NULL, 0);
         else pid = waitpid(-1, NULL, 0);
-        del_job(pid);
+        del_job(getpgid(pid));
     }
 }
 
 void shell_atexit()
 {
     free_list();
+    free_jobs();
 }
 
 #ifdef SHELL_DEBUG
