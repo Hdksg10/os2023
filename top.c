@@ -103,7 +103,7 @@ static int process_info(char* pid, struct proc * p)
         < 7)
     {
         printf("cannot read psinfo file\n");
-        return -1;
+        //return -1;
     }
     fclose(fp);
     strcpy(p->username, getpwuid(p->uid)->pw_name);
@@ -165,7 +165,7 @@ static int run_top(int sortbycpu)
             process[i].pid = strtol(dir->d_name, NULL, 10);
             if (process_info(dir->d_name, &process[i]) < 0)
             {
-                printf("cannot get process info, pid=%d\n", process[i].pid);
+                //printf("cannot get process info, pid=%d\n", process[i].pid);
                 return -1;
             }
             i++;
