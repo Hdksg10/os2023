@@ -204,7 +204,10 @@ void top()
         return;
     }
     if(run_top(order) < 0)
+    {
+        tty_reset(STDIN_FILENO);
         return;
+    }
     while ((charnum = read(STDIN_FILENO, &ctrlchar, 1)) == 1)
     {
         switch (ctrlchar)
@@ -212,16 +215,24 @@ void top()
         case 'o':
             order = !order;
             if(run_top(order) < 0)
+            {
+                tty_reset(STDIN_FILENO);
                 return;
+            }
             break;
         case 'q':
             if (tty_reset(STDIN_FILENO) < 0 )  
-                printf("cannot reset\n");
+            {
+                return;
+            }
             return;
             break;
         default:
             if(run_top(order) < 0)
+            {
+                tty_reset(STDIN_FILENO);
                 return;
+            }
             break;
         }
     }
