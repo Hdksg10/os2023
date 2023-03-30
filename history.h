@@ -8,8 +8,8 @@
  * Shell should initialize the list when it starts, and explicitly free it when exits. The built-in command history do
  * not change the content of list, it's up to shell who manage it by methods defined here.
  */
-#ifndef UNTITLED1_HISTORY_H
-#define UNTITLED1_HISTORY_H
+#ifndef SHELL_HISTORY_H
+#define SHELL_HISTORY_H
 
 #include <stdlib.h>
 #include <string.h>
@@ -35,4 +35,4 @@ int free_list();
 
 void history(int argc, char** argv);
 
-#endif //UNTITLED1_HISTORY_H
+#endif //SHELL_HISTORY_H

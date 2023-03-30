@@ -2,8 +2,8 @@
 // Created by Wu Mianzhi on 2023/3/13.
 //
 
-#ifndef UNTITLED1_UTILS_H
-#define UNTITLED1_UTILS_H
+#ifndef SHELL_UTILS_H
+#define SHELL_UTILS_H
 
 #include <errno.h>
 #include <stdio.h>
@@ -28,7 +28,7 @@ int Dup(int);
 void Pipe(int *);
 pid_t Fork();
 
-/* Excev - call excev in different path 
+/* Exceve - call exceve in different path 
  * searching path:
  * ./
  * /bin/
@@ -38,4 +38,4 @@ int Execve(const char* path, char** argv, char** envp);
 
 int Chdir(const char*);
 void Getcwd(char*, size_t);
-#endif //UNTITLED1_UTILS_H
+#endif //SHELL_UTILS_H

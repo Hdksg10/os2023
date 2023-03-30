@@ -285,9 +285,14 @@ int builtin_command(struct command * cmd, int bg)
     return res; //should not reached when bg is set
 }
 
+/* closefd - close all the fd the process doesnot need, avoid pipe read sync*/
 static void closefd()
 {
-    struct command * cmd; //current working
+    /* Since the child process save all its parent's data,
+     * all the fd opened in commands_buffer should be close,
+     * except stdin, stdout and stderr
+     */
+    struct command * cmd; //current working command
     for (cmd = commands_buffer; cmd->argc; cmd++)
     {
             for (int fd_index = 0; fd_index < 3; fd_index++)
@@ -383,6 +388,7 @@ void wait_fg()
 void shell_atexit()
 {
     free_list();
+    free_jobs();
 }
 
 #ifdef SHELL_DEBUG

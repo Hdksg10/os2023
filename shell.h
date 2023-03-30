@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef UNTITLED1_SHELL_H
-#define UNTITLED1_SHELL_H
+#ifndef SHELL_SHELL_H
+#define SHELL_SHELL_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -99,4 +99,4 @@ void shell_atexit();
 void check_buffer(void);
 #endif
 
-#endif //UNTITLED1_SHELL_H
+#endif //SHELL_SHELL_H
