@@ -23,14 +23,16 @@ static void free_process(struct process* head)
 // insert into the end of list
 void add_process(int jid, pid_t pid)
 {
-    struct process * head = jobs[jid].leader;
+    struct job* job = get_jjid(jid);
+    struct process * head = job->leader;
     struct process * proc; 
+    printf("ap:pid:%d, jid:%d\n", pid, jid);
     if (!head) //empty list
     {
         proc = malloc(sizeof(struct process));
         memset(proc, 0, sizeof(struct process));
         proc->pid = pid;
-        jobs[jid].leader = proc;
+        job->leader = proc;
     }
     else
     {
@@ -39,7 +41,35 @@ void add_process(int jid, pid_t pid)
         struct process * new_proc = malloc(sizeof(struct process)); //new process
         memset(new_proc, 0, sizeof(struct process));
         proc->next = new_proc;
+        new_proc->pid = pid;
     }
+}
+
+void del_process(pid_t pid)
+{
+    printf("delp\n");
+    struct job* job = get_jpid(pid);
+    struct process * proc = job->leader;
+    struct process * prev = NULL;
+    while (proc->pid != pid)
+    {
+        printf("ppud:%d\n", proc->pid);
+        prev = proc;
+        proc = proc->next;
+    }
+    if (!prev) // proc is the first process node
+    {
+        job->leader = proc->next;
+        free(proc);
+    }
+    else
+    {
+        prev->next = proc->next;
+        free(proc);
+    }
+
+    if (!job->leader) // empty job
+        del_job(job->pgid);
 }
 
 
@@ -70,9 +100,12 @@ int add_job(pid_t pgid, int st, char* cmd, int count)
             jobs[job_index].jid = next_jid++;
             jobs[job_index].cmd = malloc(strlen(cmd)+1);
             jobs[job_index].count = count;
+            jobs[job_index].leader = NULL;
             strcpy(jobs[job_index].cmd, cmd);
             if (next_jid > MAX_JOBS)
                 next_jid = 1;
+            // add leader process
+            add_process(jobs[job_index].jid, pgid);
             return 1;
         }
     }
@@ -126,6 +159,22 @@ struct job * get_jpgid(pid_t pgid)
     }
     return NULL;
 }
+
+struct job * get_jpid(pid_t pid)
+{
+    for (int job_index = 0; job_index < MAX_JOBS; job_index++)
+    {
+        struct process *proc = jobs[job_index].leader;
+        while (proc)
+        {
+            if (proc->pid == pid)
+                return &jobs[job_index];
+            proc = proc->next;
+        }
+    }
+    return NULL;
+}
+
 struct job * get_jjid(int jid)
 {
     for (int job_index = 0; job_index < MAX_JOBS; job_index++)
@@ -164,9 +213,13 @@ int pid2jid(pid_t pid)
     return -1;
 }
 
-static void list_processes(int jid)
+static void list_processes(int job_index)
 {
-    
+    struct process * proc = jobs[job_index].leader;
+    while (proc){
+        printf("    pid:(%d)\n", proc->pid);
+        proc = proc->next;
+    }
 }
 
 void list_jobs(void)
@@ -191,6 +244,7 @@ void list_jobs(void)
 			          job_index, jobs[job_index].st);
             }
             printf("%s\n", jobs[job_index].cmd);
+            list_processes(job_index);
         }
     }
 }

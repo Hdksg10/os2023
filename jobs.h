@@ -49,11 +49,12 @@ int del_job(pid_t);
 int maxjid(void);
 struct job * get_jpgid(pid_t);
 struct job * get_jjid(int);
+struct job * get_jpid(pid_t);
 struct job * get_fg(void);
 
 int pid2jid(pid_t pid);
 void add_process(int jid, pid_t pid);
-void del_process(int jid, pid_t pid);
+void del_process(pid_t);
 
 void list_jobs(void);
 void free_jobs(void);

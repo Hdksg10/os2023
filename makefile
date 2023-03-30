@@ -8,9 +8,9 @@ OBJS = \
 	shell.o\
 	main.o
 
-CFLAGS = -Wall -O2 -Werror
+CFLAGS = -Wall -O2 -Werror -D SHELL_DEBUG
 
-CFLAGS += -D SHELL_DEBUG
+ALL:shell
 
 shell: ${OBJS}
 	${CC} ${OBJS} -o shell
@@ -38,6 +38,9 @@ top.o : utils.h top.h top.c
 
 utils.o: utils.c utils.h
 	${CC} ${CFLAGS} -c utils.c
+
+debug:
+	${CFLAGS} += -D SHELL_DEBUG
 
 clean:
 	rm *.o shell

@@ -315,8 +315,12 @@ void eval(const char * cmdline)
     static const int fd_default[3] = {0, 2, 1};
 
     struct command * cmd; // current working cmd
-    pid_t pgid = 0; // job pgid
-    int count = 0; // job process count
+
+    /* job control */
+    pid_t pgid = 0; // new job pgid
+    int jid = 0; // new job jid
+
+
     for (cmd = commands_buffer; cmd->argc; cmd++)
     {
         pid_t pid;
@@ -358,10 +362,13 @@ void eval(const char * cmdline)
                 }
             }
             /* parent process run here */
-            count++;
             pgid = pgid == 0 ? pid:pgid;
-            printf("%d:%d\n", pid, pgid);
-            add_job(pgid, bg+1, line_buffer, count);
+
+            /* leader process add job and pgid */
+            if (!jid) jid = add_job(pgid, bg+1, line_buffer, 0);
+            /* other process add process into job */
+            else add_process(jid, pid);
+            printf("%d:%d\n", pid, jid);
             if (!bg) // set foreground group
             {
                 setpgid(pid, pgid);
@@ -372,18 +379,18 @@ void eval(const char * cmdline)
     list_jobs();
     if (!bg)
         wait_fg();
-
 }
 
 void wait_fg()
 {
     pid_t pid;
+    
     struct job* fg_job = get_fg();
     while ((fg_job = get_fg()))
     {
         if (jobcontrol) pid = waitpid(-fg_job->pgid, NULL, 0);
         else pid = waitpid(-1, NULL, 0);
-        del_job(getpgid(pid));
+        del_process(pid);
     }
 }
 
