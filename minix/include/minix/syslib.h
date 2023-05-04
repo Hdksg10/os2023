@@ -275,5 +275,8 @@ int copyfd(endpoint_t endpt, int fd, int what);
 #define COPYFD_TO	1	/* copy file descriptor to remote process */
 #define COPYFD_CLOSE	2	/* close file descriptor in remote process */
 
+/* EDF */
+int sys_chrt(endpoint_t process, long deadline);
+
 #endif /* _SYSLIB_H */
 

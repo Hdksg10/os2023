@@ -131,6 +131,8 @@ struct proc {
 #if DEBUG_TRACE
   int p_schedules;
 #endif
+  /* reseved for EDF shcdule */
+  long p_deadline;
 };
 
 #endif /* __ASSEMBLY__ */

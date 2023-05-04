@@ -135,6 +135,7 @@ void proc_init(void)
 		rp->p_priority = 0;		/* no priority */
 		rp->p_quantum_size_ms = 0;	/* no quantum size */
 
+		rp->p_deadline = 0; /* no deadline */
 		/* arch-specific initialization */
 		arch_proc_reset(rp);
 	}
@@ -1732,6 +1733,17 @@ static struct proc * pick_proc(void)
 	if(!(rp = rdy_head[q])) {
 		TRACE(VF_PICKPROC, printf("cpu %d queue %d empty\n", cpuid, q););
 		continue;
+	}
+	/* Check if the ready queue is EDF process queue */
+	if(q == 6){
+		assert(rp->p_priority == 6);
+		for (register struct proc *p = rp; p; p = p->p_nextready)
+		{
+			/* Skip process not real-time or not runnable */
+			if (!proc_is_runnable(p) || !p->p_deadline) continue;
+			if (p->p_deadline < rp->p_deadline || !rp->p_deadline)
+				rp = p;
+		}
 	}
 	assert(proc_is_runnable(rp));
 	if (priv(rp)->s_flags & BILLABLE)	 	
