@@ -1,108 +1,110 @@
-//
-// Created by Wu Mianzhi on 2023/3/13.
-//
-#include "utils.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <time.h>
+#include <string.h>
 
-void app_error(const char* msg)
+#define NRROUND 1024
+#define FILEROUNDUP (NRROUND * 64 * 1024)
+
+double read_file(char* filepath, unsigned block_size, int random);
+double write_file(char* filepath, unsigned block_size, int random);
+void init_file(char* filepath);
+
+void init_file(char* filepath)
 {
-    fprintf(stderr, "%s\n", msg);
-    exit(1);
-}
-
-void unix_error(const char* msg)
-{
-    fprintf(stdout, "%s: %s\n", msg, strerror(errno));
-    exit(1);
-}
-
-
-int Open(const char * path, enum io_mode mode)
-{
-    int fd;
-    mode_t oflag;
-
-    mode_t pflag; // set new file permissions
-    pflag = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
-
-    switch (mode) {
-        case in:
-            oflag = O_RDONLY;
-            break;
-        case out:
-            oflag = O_WRONLY | O_CREAT | O_TRUNC;
-            break;
-        case append:
-            oflag = O_WRONLY | O_APPEND | O_CREAT;
-            break;
-        default:
-            oflag = 0;
-            break;
-    }
-    fd = open(path, oflag, pflag);
+    int fd = 0;
+    fd = open(filepath, O_CREAT | O_RDWR | O_TRUNC, S_IRWXU);
     if (fd < 0)
-        unix_error("cannot open file");
-    return fd;
-}
-
-void Close(int fd)
-{
-    if (close(fd) < 0)
-        unix_error("cannot close fd");
-}
-
-int Dup(int fd)
-{
-    int new_fd = 0;
-    if ((new_fd = dup(fd)) < 0)
-        unix_error("cannot duplicate fd");
-    return new_fd;
-}
-
-pid_t Fork()
-{
-    pid_t pid;
-    if ((pid = fork()) < 0)
-        unix_error("fork error");
-    return pid;
-}
-
-int Execve(const char* path, char** argv, char** envp)
-{
-    int result;
-
-    char buffer[NAME_MAX];
-    char searching_path[3][16] = {"./", "/bin/", "/usr/bin/"};
-
-    for (int i = 0; i < 3; i++)
+        fprintf(stderr, "Cannot create file: %s", filepath);
+    char junk[1024];
+    memset(junk, 5, 1024);
+    for (int i = 0; i < NRROUND * 64; i++)
     {
-        strcpy(buffer, searching_path[i]);
-        strcat(buffer, path);
-        result = execve(buffer, argv, envp);
+        unsigned write_bytes = write(fd, junk, 1024);
+        if (write_bytes != 1024)
+        {
+            fprintf(stderr, "Error occurred when init file: %s", filepath);
+            return;
+        }
     }
-
-    return result;
+    close(fd);
 }
 
-void Pipe(int pipefd[2])
+double write_file(char* filepath, unsigned block_size, int random)
 {
-    if (pipe(pipefd) < 0)
-        unix_error("cannot create pipe");
-}
-
-int Chdir(const char* path)
-{
-    if (chdir(path) < 0 && errno != ENOENT)
-        unix_error("cannot change working dir");
-    else if (errno == ENOENT) // no such dir
-        return -1;
-    return 0;
-}
-
-void Getcwd(char* buffer, size_t size)
-{
-    if (!getcwd(buffer, size))
+    char byte8[9] = "8bytestr";
+    clock_t st, et;
+    double writetime = 0.0;
+    int fd = 0;
+    fd = open(filepath, O_CREAT | O_RDWR | O_SYNC, S_IRWXU);
+    if (fd < 0)
+        fprintf(stderr, "Cannot open file: %s", filepath);
+    
+    char* buffer = malloc(block_size);
+    for (int i = 0; i < block_size / 8; i++)
     {
-        unix_error("working directory pathname is too long");
+        strcat(buffer, byte8);
     }
+    for (int i = 0; i < NRROUND; i++)
+    {
+        if (random)
+        {
+            lseek(fd, rand() % FILEROUNDUP, SEEK_SET);
+        }
+        st = clock();
+        unsigned write_bytes = write(fd, buffer, block_size);
+        et = clock();
+        if (write_bytes < block_size)
+            i--;
+        else
+            writetime += (et - st) / CLOCKS_PER_SEC;
+    }
+    free(buffer);
+    lseek(fd, 0, SEEK_SET);
+    close(fd);
+    return writetime;
 }
 
+double read_file(char* filepath, unsigned block_size, int random)
+{
+    clock_t st, et;
+    double readtime = 0.0;
+    int fd = 0;
+    fd = open(filepath, O_CREAT | O_RDWR | O_SYNC, S_IRWXU);
+    if (fd < 0)
+        fprintf(stderr, "Cannot open file: %s", filepath);
+    
+    char* buffer = malloc(block_size);
+    for (int i = 0; i < NRROUND; i++)
+    {
+        if (random)
+        {
+            lseek(fd, rand() % FILEROUNDUP, SEEK_SET);
+        }
+        st = clock();
+        unsigned read_bytes = read(fd, buffer, block_size);
+        et = clock();
+        if (read_bytes < block_size)
+            i--;
+        else
+            readtime += (et - st) / CLOCKS_PER_SEC;
+    }
+    free(buffer);
+    lseek(fd, 0, SEEK_SET);
+    close(fd);
+    return readtime;
+}
+
+int main()
+{
+    char byte8[9] = "8bytestr";
+    unsigned busz = 64;
+    char* buffer = malloc(busz);
+    for (int i = 0; i < busz / 8; i++)
+    {
+        strcat(buffer, byte8);
+    }
+    printf("%d\n", strlen(buffer));
+}
