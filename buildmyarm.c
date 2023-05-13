@@ -4,7 +4,8 @@
 #include <sys/ioc_memory.h>  
 #include <stdio.h>  
 #include <fcntl.h>  
-#include <stdlib.h>  
+#include <stdlib.h>
+#include <sys/ioctl.h>  
   
 int main(int argc, char *argv[])  
 {  
