@@ -1,4 +1,6 @@
+
 #include <minix/paths.h>  
+
 #include <sys/ioc_memory.h>  
 #include <stdio.h>  
 #include <fcntl.h>  
@@ -22,8 +24,8 @@ int main(int argc, char *argv[])
         return 1;  
     }  
   
-#define KFACTOR 1024  
-    size = atol(argv[1])*KFACTOR*1024;  
+#define KFACTOR (1024*1024)  
+    size = atol(argv[1])*KFACTOR;  
   
     if(size < 0) {  
         fprintf(stderr, "size should be non-negative.\n");  
@@ -35,7 +37,7 @@ int main(int argc, char *argv[])
         return 1;  
     }  
   
-    fprintf(stderr, "size on %s set to %ldMB\n", d, size/KFACTOR/1024);  
+    fprintf(stderr, "size on %s set to %ldMB\n", d, size/KFACTOR);  
   
     return 0;  
 }
