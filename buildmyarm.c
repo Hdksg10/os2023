@@ -10,7 +10,7 @@
 int main(int argc, char *argv[])  
 {  
     int fd;  
-    signed long size;  
+    signed long long size;  
     char *d;  
   
     if(argc < 2 || argc > 3) {  
