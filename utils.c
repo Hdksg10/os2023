@@ -19,7 +19,7 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
 typedef struct timeval timeval_t;
 double get_time_left(timeval_t st, timeval_t ed)
 {
-    return (ed.tv_usec - st.tv_usec) / 1000.0;
+    return (ed.tv_usec - st.tv_usec) / 100000.0;
 }
 
 void init_file(char* filepath)
