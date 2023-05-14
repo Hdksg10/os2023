@@ -4,13 +4,22 @@
 #include <fcntl.h>
 #include <time.h>
 #include <string.h>
+#include <sys/wait.h>
+#include <assert.h>
 
 #define NRROUND 1024
-#define FILEROUNDUP (NRROUND * 64 * 1024)
+#define FILEROUNDUP (NRROUND * 128 * 1024)
+const static char* path_format[2] = {"/root/myram/ram_%d", "/usr/disk_%d"};
 
-double read_file(char* filepath, unsigned block_size, int random);
-double write_file(char* filepath, unsigned block_size, int random);
+void read_file(char* filepath, unsigned block_size, int random);
+void write_file(char* filepath, unsigned block_size, int random);
 void init_file(char* filepath);
+void single_test(unsigned concurrency, unsigned block_size, int random, int disk);
+
+double get_time_left(time_t st, time_t ed)
+{
+    return difftime(ed, st);
+}
 
 void init_file(char* filepath)
 {
@@ -32,11 +41,9 @@ void init_file(char* filepath)
     close(fd);
 }
 
-double write_file(char* filepath, unsigned block_size, int random)
+void write_file(char* filepath, unsigned block_size, int random)
 {
-    char byte8[9] = "8bytestr";
-    clock_t st, et;
-    double writetime = 0.0;
+    static char byte8[9] = "8bytestr";
     int fd = 0;
     fd = open(filepath, O_CREAT | O_RDWR | O_SYNC, S_IRWXU);
     if (fd < 0)
@@ -51,26 +58,20 @@ double write_file(char* filepath, unsigned block_size, int random)
     {
         if (random)
         {
-            lseek(fd, rand() % FILEROUNDUP, SEEK_SET);
+            lseek(fd, rand() % (FILEROUNDUP - block_size), SEEK_SET);
         }
-        st = clock();
         unsigned write_bytes = write(fd, buffer, block_size);
-        et = clock();
-        if (write_bytes < block_size)
-            i--;
-        else
-            writetime += (et - st) / CLOCKS_PER_SEC;
+        assert(write_bytes == block_size);
+        // if (write_bytes < block_size)
+        //     i--;
     }
     free(buffer);
     lseek(fd, 0, SEEK_SET);
     close(fd);
-    return writetime;
 }
 
-double read_file(char* filepath, unsigned block_size, int random)
+void read_file(char* filepath, unsigned block_size, int random)
 {
-    clock_t st, et;
-    double readtime = 0.0;
     int fd = 0;
     fd = open(filepath, O_CREAT | O_RDWR | O_SYNC, S_IRWXU);
     if (fd < 0)
@@ -81,30 +82,72 @@ double read_file(char* filepath, unsigned block_size, int random)
     {
         if (random)
         {
-            lseek(fd, rand() % FILEROUNDUP, SEEK_SET);
+            lseek(fd, rand() % (FILEROUNDUP - block_size), SEEK_SET);
         }
-        st = clock();
         unsigned read_bytes = read(fd, buffer, block_size);
-        et = clock();
-        if (read_bytes < block_size)
-            i--;
-        else
-            readtime += (et - st) / CLOCKS_PER_SEC;
+        assert(read_bytes == block_size);
+        // if (read_bytes < block_size)
+        //     i--;
     }
     free(buffer);
     lseek(fd, 0, SEEK_SET);
     close(fd);
-    return readtime;
+}
+
+void single_test(unsigned concurrency, unsigned block_size, int random, int disk)
+{
+    const static char* storage[2] = {"ram", "disk"};
+    char path[16];
+    double interval = 0;
+    long filesize = NRROUND * concurrency * block_size;
+    time_t start_time, end_time;
+
+    printf("Testing: blocksize = %u, concurrency = %u, storage = %s, random = %d\n",
+            block_size, concurrency, storage[disk], random);
+    
+    /* init file */
+    for (int i = 0; i < concurrency; i++)
+    {
+        sprintf(path, path_format[disk], i);
+        init_file(path);
+    }
+    printf("File init done\n");
+
+    start_time = time(NULL);
+    for (int i = 0; i < concurrency; i++)
+    {
+        if (fork() == 0)
+        {
+            sprintf(path, path_format[disk], i);
+            read_file(path, block_size, random);
+            exit(0);
+        }
+    }
+    for (int i = 0; i < concurrency; i++)
+        wait(NULL);
+    end_time = time(NULL);
+    interval = get_time_left(start_time, end_time);
+    printf("Test read done: time = %lf, filesize = %ld, throughout = %lf\n", interval, filesize, filesize / interval);
+
+    start_time = time(NULL);
+    for (int i = 0; i < concurrency; i++)
+    {
+        if (fork() == 0)
+        {
+            sprintf(path, path_format[disk], i);
+            write_file(path, block_size, random);
+            exit(0);
+        }
+    }
+    for (int i = 0; i < concurrency; i++)
+        wait(NULL);
+    end_time = time(NULL);
+    interval = get_time_left(start_time, end_time);
+    printf("Test write done: time = %lf, filesize = %ld, throughout = %lf\n", interval, filesize, filesize / interval);
 }
 
 int main()
 {
-    char byte8[9] = "8bytestr";
-    unsigned busz = 64;
-    char* buffer = malloc(busz);
-    for (int i = 0; i < busz / 8; i++)
-    {
-        strcat(buffer, byte8);
-    }
-    printf("%d\n", strlen(buffer));
+    single_test(4, 64, 0, 1);
+    return 0;
 }
