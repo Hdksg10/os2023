@@ -9,7 +9,7 @@
 #include <assert.h>
 
 #define NRROUND 1024
-#define FILEROUNDUP (NRROUND * 128 * 1024)
+#define FILEROUNDUP (NRROUND * 32 * 1024)
 const static char* path_format[2] = {"/root/myram/ram_%d", "/usr/disk_%d"};
 
 void read_file(char* filepath, unsigned block_size, int random);
@@ -19,7 +19,7 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
 typedef struct timeval timeval_t;
 double get_time_left(timeval_t st, timeval_t ed)
 {
-    return (ed.tv_usec - st.tv_usec) / 100000.0;
+    return (ed.tv_usec - st.tv_usec) / 100000.0 + (ed.tv_sec - st.tv_sec);
 }
 
 void init_file(char* filepath)
