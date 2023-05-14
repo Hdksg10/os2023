@@ -99,7 +99,7 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
 {
     srand(time(0));
     const static char* storage[2] = {"ram", "disk"};
-    char path[16];
+    char path[32];
     double interval = 0;
     long filesize = NRROUND * concurrency * block_size;
     timeval_t start_time, end_time;
