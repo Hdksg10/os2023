@@ -5,6 +5,7 @@
 #include <time.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <sys/time.h>
 #include <assert.h>
 
 #define NRROUND 1024
@@ -15,10 +16,10 @@ void read_file(char* filepath, unsigned block_size, int random);
 void write_file(char* filepath, unsigned block_size, int random);
 void init_file(char* filepath);
 void single_test(unsigned concurrency, unsigned block_size, int random, int disk);
-
-double get_time_left(time_t st, time_t ed)
+typedef struct timeval timeval_t;
+double get_time_left(timeval_t st, timeval_t ed)
 {
-    return difftime(ed, st);
+    return (ed.tv_usec - st.tv_usec) / 1000.0;
 }
 
 void init_file(char* filepath)
@@ -96,11 +97,12 @@ void read_file(char* filepath, unsigned block_size, int random)
 
 void single_test(unsigned concurrency, unsigned block_size, int random, int disk)
 {
+    srand(time(0));
     const static char* storage[2] = {"ram", "disk"};
     char path[16];
     double interval = 0;
     long filesize = NRROUND * concurrency * block_size;
-    time_t start_time, end_time;
+    timeval_t start_time, end_time;
 
     printf("Testing: blocksize = %u, concurrency = %u, storage = %s, random = %d\n",
             block_size, concurrency, storage[disk], random);
@@ -113,7 +115,7 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
     }
     printf("File init done\n");
 
-    start_time = time(NULL);
+    gettimeofday(&start_time, NULL);
     for (int i = 0; i < concurrency; i++)
     {
         if (fork() == 0)
@@ -125,11 +127,11 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
     }
     for (int i = 0; i < concurrency; i++)
         wait(NULL);
-    end_time = time(NULL);
+    gettimeofday(&end_time, NULL);
     interval = get_time_left(start_time, end_time);
     printf("Test read done: time = %lf, filesize = %ld, throughout = %lf\n", interval, filesize, filesize / interval);
 
-    start_time = time(NULL);
+    gettimeofday(&start_time, NULL);
     for (int i = 0; i < concurrency; i++)
     {
         if (fork() == 0)
@@ -141,7 +143,7 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
     }
     for (int i = 0; i < concurrency; i++)
         wait(NULL);
-    end_time = time(NULL);
+    gettimeofday(&end_time, NULL);
     interval = get_time_left(start_time, end_time);
     printf("Test write done: time = %lf, filesize = %ld, throughout = %lf\n", interval, filesize, filesize / interval);
 }
