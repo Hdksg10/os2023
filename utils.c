@@ -148,8 +148,18 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
     printf("Test write done: time = %lf, filesize = %ld, throughout = %lf\n", interval, filesize, filesize / interval);
 }
 
-int main()
+int main(int argc, char** argv)
 {
-    single_test(4, 64, 0, 1);
+    if (argc != 4){
+        fprintf(stderr, "Usage: utils <NRProcess> <Blocksize> <random>\n");
+        return 0;
+    }
+    unsigned concurrency = atoi(argv[1]);
+    unsigned blocksize  = atoi(argv[2]);
+    int random = atoi(argv[3]);
+    printf("RAM Test:\n");
+    single_test(concurrency, blocksize, random, 0);
+    printf("Disk Test:\n");
+    single_test(concurrency, blocksize, random, 1);
     return 0;
 }
