@@ -9,7 +9,7 @@
 #include <assert.h>
 
 #define NRROUND 1024
-#define FILEROUNDUP (NRROUND * 32 * 1024)
+#define FILEROUNDUP (NRROUND * 64 * 1024)
 const static char* path_format[2] = {"/root/myram/ram_%d", "/usr/disk_%d"};
 
 void read_file(char* filepath, unsigned block_size, int random);
