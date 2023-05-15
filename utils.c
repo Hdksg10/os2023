@@ -48,17 +48,17 @@ void init_file(char* filepath, unsigned sz)
 
 void write_file(char* filepath, unsigned block_size, int random)
 {
-    static char byte8[9] = "8bytestr";
+    //static char byte8[9] = "8bytestr";
     int fd = 0;
     fd = open(filepath, O_CREAT | O_RDWR | O_SYNC, S_IRWXU);
     if (fd < 0)
         fprintf(stderr, "Cannot open file: %s", filepath);
     
     char* buffer = malloc(block_size * sizeof(char) + 1);
-    for (int i = 0; i < block_size / 8; i++)
-    {
-        strcat(buffer, byte8);
-    }
+    // for (int i = 0; i < block_size / 8; i++)
+    // {
+    //     strcat(buffer, byte8);
+    // }
     printf("%d\n", strlen(buffer));
     for (int i = 0; i < NRROUND; i++)
     {
