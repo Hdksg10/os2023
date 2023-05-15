@@ -59,7 +59,7 @@ void write_file(char* filepath, unsigned block_size, int random)
     // {
     //     strcat(buffer, byte8);
     // }
-    printf("%d\n", strlen(buffer));
+    //printf("%d\n", strlen(buffer));
     for (int i = 0; i < NRROUND; i++)
     {
         if (random)
