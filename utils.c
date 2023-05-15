@@ -165,9 +165,9 @@ int main(int argc, char** argv)
     for (int i = 5 ; i < concurrency; i++)
     {
         printf("RAM Test:\n");
-        single_test(concurrency, blocksize, random, 0);
+        single_test(i, blocksize, random, 0);
         printf("Disk Test:\n");
-        single_test(concurrency, blocksize, random, 1);
+        single_test(i, blocksize, random, 1);
     }
     return 0;
 }
