@@ -9,36 +9,38 @@
 #include <assert.h>
 
 #define NRROUND 1024
-#define FILEROUNDUP (NRROUND * 64 * 1024)
+#define FILEROUNDUP 512
+#define FILEROUNDUPBYTES (FILEROUNDUP * 1024 * 1024) // total file size (512MB)
 const static char* path_format[2] = {"/root/myram/ram_%d", "/usr/disk_%d"};
+static unsigned filesize; // file size (MB)
 
 void read_file(char* filepath, unsigned block_size, int random);
 void write_file(char* filepath, unsigned block_size, int random);
-void init_file(char* filepath);
+void init_file(char* filepath, unsigned sz);
 void single_test(unsigned concurrency, unsigned block_size, int random, int disk);
 typedef struct timeval timeval_t;
 double get_time_left(timeval_t st, timeval_t ed)
 {
-    return (ed.tv_usec - st.tv_usec) / 100000.0 + (ed.tv_sec - st.tv_sec);
+    return (ed.tv_usec - st.tv_usec) / 1000.0 + (ed.tv_sec - st.tv_sec) * 1000;
 }
 
-void init_file(char* filepath)
+void init_file(char* filepath, unsigned sz)
 {
     int fd = 0;
     fd = open(filepath, O_CREAT | O_RDWR | O_TRUNC, S_IRWXU);
     if (fd < 0)
         fprintf(stderr, "Cannot create file: %s", filepath);
-    // char junk[1024];
-    // memset(junk, 5, 1024);
-    // for (int i = 0; i < NRROUND * 64; i++)
-    // {
-    //     unsigned write_bytes = write(fd, junk, 1024);
-    //     if (write_bytes != 1024)
-    //     {
-    //         fprintf(stderr, "Error occurred when init file: %s", filepath);
-    //         return;
-    //     }
-    // }
+    char junk[1024];
+    memset(junk, 5, 1024);
+    for (int i = 0; i < sz * 1024; i++)
+    {
+        unsigned write_bytes = write(fd, junk, 1024);
+        if (write_bytes != 1024)
+        {
+            fprintf(stderr, "Error occurred when init file: %s", filepath);
+            return;
+        }
+    }
     close(fd);
 }
 
@@ -59,7 +61,7 @@ void write_file(char* filepath, unsigned block_size, int random)
     {
         if (random)
         {
-            lseek(fd, rand() % (FILEROUNDUP - block_size), SEEK_SET);
+            lseek(fd, rand() % (filesize * 1024 * 1024 - block_size), SEEK_SET);
         }
         unsigned write_bytes = write(fd, buffer, block_size);
         assert(write_bytes == block_size);
@@ -83,7 +85,7 @@ void read_file(char* filepath, unsigned block_size, int random)
     {
         if (random)
         {
-            lseek(fd, rand() % (FILEROUNDUP - block_size), SEEK_SET);
+            lseek(fd, rand() % (filesize * 1024 * 1024 - block_size), SEEK_SET);
         }
         unsigned read_bytes = read(fd, buffer, block_size);
         assert(read_bytes == block_size);
@@ -101,7 +103,7 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
     const static char* storage[2] = {"ram", "disk"};
     char path[32];
     double interval = 0;
-    long filesize = NRROUND * concurrency * block_size;
+    long datasize = NRROUND * concurrency * block_size;
     timeval_t start_time, end_time;
 
     printf("Testing: blocksize = %u, concurrency = %u, storage = %s, random = %d\n",
@@ -111,7 +113,7 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
     for (int i = 0; i < concurrency; i++)
     {
         sprintf(path, path_format[disk], i);
-        init_file(path);
+        init_file(path, filesize);
     }
     printf("File init done\n");
 
@@ -129,7 +131,7 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
         wait(NULL);
     gettimeofday(&end_time, NULL);
     interval = get_time_left(start_time, end_time);
-    printf("Test write done: time = %lf, filesize = %ld, throughout = %lf\n", interval, filesize, filesize / interval);
+    printf("Test write done: time = %lf, filesize = %ld, throughout = %lf\n", interval, datasize, datasize / interval);
 
     gettimeofday(&start_time, NULL);
     for (int i = 0; i < concurrency; i++)
@@ -145,7 +147,7 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
         wait(NULL);
     gettimeofday(&end_time, NULL);
     interval = get_time_left(start_time, end_time);
-    printf("Test read done: time = %lf, filesize = %ld, throughout = %lf\n", interval, filesize, filesize / interval);
+    printf("Test read done: time = %lf, filesize = %ld, throughout = %lf\n", interval, datasize, datasize / interval);
 }
 
 int main(int argc, char** argv)
@@ -157,6 +159,7 @@ int main(int argc, char** argv)
     unsigned concurrency = atoi(argv[1]);
     unsigned blocksize  = atoi(argv[2]);
     int random = atoi(argv[3]);
+    filesize = FILEROUNDUP / concurrency;
     printf("RAM Test:\n");
     single_test(concurrency, blocksize, random, 0);
     printf("Disk Test:\n");
