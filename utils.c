@@ -30,17 +30,17 @@ void init_file(char* filepath, unsigned sz)
     fd = open(filepath, O_CREAT | O_RDWR | O_TRUNC | O_SYNC, S_IRWXU);
     if (fd < 0)
         fprintf(stderr, "Cannot create file: %s", filepath);
-    // char junk[1024];
-    // memset(junk, 5, 1024);
-    // for (int i = 0; i < sz * 1024; i++)
-    // {
-    //     unsigned write_bytes = write(fd, junk, 1024);
-    //     if (write_bytes != 1024)
-    //     {
-    //         fprintf(stderr, "Error occurred when init file: %s", filepath);
-    //         return;
-    //     }
-    // }
+    char junk[1024];
+    memset(junk, 5, 1024);
+    for (int i = 0; i < sz * 1024; i++)
+    {
+        unsigned write_bytes = write(fd, junk, 1024);
+        if (write_bytes != 1024)
+        {
+            fprintf(stderr, "Error occurred when init file: %s", filepath);
+            return;
+        }
+    }
     close(fd);
 }
 
@@ -64,7 +64,7 @@ void write_file(char* filepath, unsigned block_size, int random)
             lseek(fd, rand() % (filesize * 1024 * 1024 - block_size), SEEK_SET);
         }
         unsigned write_bytes = write(fd, buffer, block_size);
-        //assert(write_bytes == block_size);
+        assert(write_bytes == block_size);
         // if (write_bytes < block_size)
         //     i--;
     }
@@ -88,7 +88,7 @@ void read_file(char* filepath, unsigned block_size, int random)
             lseek(fd, rand() % (filesize * 1024 * 1024 - block_size), SEEK_SET);
         }
         unsigned read_bytes = read(fd, buffer, block_size);
-        //assert(read_bytes == block_size);
+        assert(read_bytes == block_size);
         // if (read_bytes < block_size)
         //     i--;
     }
