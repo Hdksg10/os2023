@@ -11,6 +11,8 @@
 #define NRROUND 1024
 #define FILEROUNDUP 1024
 #define FILEROUNDUPBYTES (FILEROUNDUP * 1024 * 1024) // total file size (1024MB)
+#define PFILEROUNDUP 60
+#define PFILEROUNDUPBYTES (PFILEROUNDUP * 1024 * 1024)
 const static char* path_format[2] = {"/root/myram/ram_%d", "/usr/disk_%d"};
 static unsigned filesize; // file size (MB)
 
@@ -32,7 +34,7 @@ void init_file(char* filepath, unsigned sz)
         fprintf(stderr, "Cannot create file: %s", filepath);
     char junk[1024];
     memset(junk, 5, 1024);
-    for (int i = 0; i < sz * 1024; i++)
+    for (int i = 0; i < PFILEROUNDUP * 1024; i++)
     {
         unsigned write_bytes = write(fd, junk, 1024);
         if (write_bytes != 1024)
@@ -61,7 +63,7 @@ void write_file(char* filepath, unsigned block_size, int random)
     {
         if (random)
         {
-            lseek(fd, rand() % (filesize * 1024 * 1024 - block_size), SEEK_SET);
+            lseek(fd, rand() % (PFILEROUNDUPBYTES - block_size), SEEK_SET);
         }
         unsigned write_bytes = write(fd, buffer, block_size);
         assert(write_bytes == block_size);
@@ -85,7 +87,7 @@ void read_file(char* filepath, unsigned block_size, int random)
     {
         if (random)
         {
-            lseek(fd, rand() % (filesize * 1024 * 1024 - block_size), SEEK_SET);
+            lseek(fd, rand() % (PFILEROUNDUPBYTES - block_size), SEEK_SET);
         }
         unsigned read_bytes = read(fd, buffer, block_size);
         assert(read_bytes == block_size);
@@ -160,9 +162,12 @@ int main(int argc, char** argv)
     unsigned blocksize  = atoi(argv[2]);
     int random = atoi(argv[3]);
     filesize = FILEROUNDUP / concurrency;
-    printf("RAM Test:\n");
-    single_test(concurrency, blocksize, random, 0);
-    printf("Disk Test:\n");
-    single_test(concurrency, blocksize, random, 1);
+    for (int i = 5 ; i < concurrency; i++)
+    {
+        printf("RAM Test:\n");
+        single_test(concurrency, blocksize, random, 0);
+        printf("Disk Test:\n");
+        single_test(concurrency, blocksize, random, 1);
+    }
     return 0;
 }
