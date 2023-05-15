@@ -121,22 +121,6 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
         if (fork() == 0)
         {
             sprintf(path, path_format[disk], i);
-            read_file(path, block_size, random);
-            exit(0);
-        }
-    }
-    for (int i = 0; i < concurrency; i++)
-        wait(NULL);
-    gettimeofday(&end_time, NULL);
-    interval = get_time_left(start_time, end_time);
-    printf("Test read done: time = %lf, filesize = %ld, throughout = %lf\n", interval, filesize, filesize / interval);
-
-    gettimeofday(&start_time, NULL);
-    for (int i = 0; i < concurrency; i++)
-    {
-        if (fork() == 0)
-        {
-            sprintf(path, path_format[disk], i);
             write_file(path, block_size, random);
             exit(0);
         }
@@ -146,6 +130,22 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
     gettimeofday(&end_time, NULL);
     interval = get_time_left(start_time, end_time);
     printf("Test write done: time = %lf, filesize = %ld, throughout = %lf\n", interval, filesize, filesize / interval);
+
+    gettimeofday(&start_time, NULL);
+    for (int i = 0; i < concurrency; i++)
+    {
+        if (fork() == 0)
+        {
+            sprintf(path, path_format[disk], i);
+            read_file(path, block_size, random);
+            exit(0);
+        }
+    }
+    for (int i = 0; i < concurrency; i++)
+        wait(NULL);
+    gettimeofday(&end_time, NULL);
+    interval = get_time_left(start_time, end_time);
+    printf("Test read done: time = %lf, filesize = %ld, throughout = %lf\n", interval, filesize, filesize / interval);
 }
 
 int main(int argc, char** argv)
