@@ -28,17 +28,17 @@ void init_file(char* filepath)
     fd = open(filepath, O_CREAT | O_RDWR | O_TRUNC, S_IRWXU);
     if (fd < 0)
         fprintf(stderr, "Cannot create file: %s", filepath);
-    char junk[1024];
-    memset(junk, 5, 1024);
-    for (int i = 0; i < NRROUND * 64; i++)
-    {
-        unsigned write_bytes = write(fd, junk, 1024);
-        if (write_bytes != 1024)
-        {
-            fprintf(stderr, "Error occurred when init file: %s", filepath);
-            return;
-        }
-    }
+    // char junk[1024];
+    // memset(junk, 5, 1024);
+    // for (int i = 0; i < NRROUND * 64; i++)
+    // {
+    //     unsigned write_bytes = write(fd, junk, 1024);
+    //     if (write_bytes != 1024)
+    //     {
+    //         fprintf(stderr, "Error occurred when init file: %s", filepath);
+    //         return;
+    //     }
+    // }
     close(fd);
 }
 
