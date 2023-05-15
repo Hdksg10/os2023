@@ -9,8 +9,8 @@
 #include <assert.h>
 
 #define NRROUND 1024
-#define FILEROUNDUP 512
-#define FILEROUNDUPBYTES (FILEROUNDUP * 1024 * 1024) // total file size (512MB)
+#define FILEROUNDUP 1024
+#define FILEROUNDUPBYTES (FILEROUNDUP * 1024 * 1024) // total file size (1024MB)
 const static char* path_format[2] = {"/root/myram/ram_%d", "/usr/disk_%d"};
 static unsigned filesize; // file size (MB)
 
@@ -103,7 +103,7 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
     const static char* storage[2] = {"ram", "disk"};
     char path[32];
     double interval = 0;
-    long datasize = NRROUND * concurrency * block_size;
+    long datasize = (NRROUND * concurrency * block_size) / (1024 * 1024);
     timeval_t start_time, end_time;
 
     printf("Testing: blocksize = %u, concurrency = %u, storage = %s, random = %d\n",
@@ -130,7 +130,7 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
     for (int i = 0; i < concurrency; i++)
         wait(NULL);
     gettimeofday(&end_time, NULL);
-    interval = get_time_left(start_time, end_time);
+    interval = get_time_left(start_time, end_time) / 1000.0;
     printf("Test write done: time = %lf, filesize = %ld, throughout = %lf\n", interval, datasize, datasize / interval);
 
     gettimeofday(&start_time, NULL);
@@ -146,7 +146,7 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
     for (int i = 0; i < concurrency; i++)
         wait(NULL);
     gettimeofday(&end_time, NULL);
-    interval = get_time_left(start_time, end_time);
+    interval = get_time_left(start_time, end_time) / 1000.0;
     printf("Test read done: time = %lf, filesize = %ld, throughout = %lf\n", interval, datasize, datasize / interval);
 }
 
