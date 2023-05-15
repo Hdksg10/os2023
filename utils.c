@@ -46,32 +46,56 @@ void init_file(char* filepath, unsigned sz)
     close(fd);
 }
 
+// void write_file(char* filepath, unsigned block_size, int random)
+// {
+//     static char byte8[9] = "8bytestr";
+//     int fd = 0;
+//     fd = open(filepath, O_CREAT | O_RDWR | O_SYNC, S_IRWXU);
+//     if (fd < 0)
+//         fprintf(stderr, "Cannot open file: %s", filepath);
+    
+//     char* buffer = malloc(block_size);
+//     for (int i = 0; i < block_size / 8; i++)
+//     {
+//         strcat(buffer, byte8);
+//     }
+//     for (int i = 0; i < NRROUND; i++)
+//     {
+//         if (random)
+//         {
+//             lseek(fd, rand() % (PFILEROUNDUPBYTES - block_size), SEEK_SET);
+//         }
+//         unsigned write_bytes = write(fd, buffer, block_size);
+//         assert(write_bytes == block_size);
+//         // if (write_bytes < block_size)
+//         //     i--;
+//     }
+//     free(buffer);
+//     lseek(fd, 0, SEEK_SET);
+//     close(fd);
+// }
 void write_file(char* filepath, unsigned block_size, int random)
 {
-    static char byte8[9] = "8bytestr";
-    int fd = 0;
-    fd = open(filepath, O_CREAT | O_RDWR | O_SYNC, S_IRWXU);
-    if (fd < 0)
-        fprintf(stderr, "Cannot open file: %s", filepath);
-    
-    char* buffer = malloc(block_size);
-    for (int i = 0; i < block_size / 8; i++)
-    {
-        strcat(buffer, byte8);
-    }
-    for (int i = 0; i < NRROUND; i++)
-    {
-        if (random)
-        {
-            lseek(fd, rand() % (PFILEROUNDUPBYTES - block_size), SEEK_SET);
-        }
-        unsigned write_bytes = write(fd, buffer, block_size);
-        assert(write_bytes == block_size);
-        // if (write_bytes < block_size)
-        //     i--;
-    }
-    free(buffer);
-    lseek(fd, 0, SEEK_SET);
+    const int BUFSIZE = 64;
+    static char buffer[BUFSIZE] = "This is a 6KB block!";
+    int fd = 0;  
+    fd = open(filepath, O_CREAT | O_RDWR | O_SYNC, S_IRWXU);  
+    if(fd < 0){  
+        fprintf(stdout, "Error occurred when opening file!");  
+        return;  
+    }  
+    char *buf_ext = (char *)malloc(sizeof(char) * block_size);  
+    for(int i = 0; i < block_size / BUFSIZE; i++){  
+        strcat(buf_ext, buffer);  
+    }  
+    for(int i = 0; i < NRROUND; i++){  
+        unsigned writebytes = write(fd, buf_ext, block_size);  
+        if(random){  
+            lseek(fd, rand() % ((block_size - 1) * NRROUND), SEEK_SET);  
+        }  
+        assert(writebytes == block_size);
+    }  
+    lseek(fd, 0, SEEK_SET);  
     close(fd);
 }
 
