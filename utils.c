@@ -8,6 +8,7 @@
 #include <sys/time.h>
 #include <assert.h>
 
+
 #define NRROUND 1024
 #define FILEROUNDUP 1024
 #define FILEROUNDUPBYTES (FILEROUNDUP * 1024 * 1024) // total file size (1024MB)
@@ -39,7 +40,7 @@ void init_file(char* filepath, unsigned sz)
         unsigned write_bytes = write(fd, junk, 1024);
         if (write_bytes != 1024)
         {
-            fprintf(stderr, "Error occurred when init file: %s", filepath);
+            fprintf(stderr, "Error occurred when init file: %s\n", filepath);
             return;
         }
     }
@@ -52,7 +53,7 @@ void write_file(char* filepath, unsigned block_size, int random)
     int fd = 0;
     fd = open(filepath, O_CREAT | O_RDWR | O_SYNC, S_IRWXU);
     if (fd < 0)
-        fprintf(stderr, "Cannot open file: %s", filepath);
+        fprintf(stderr, "Cannot open file: %s\n", filepath);
     
     char* buffer = malloc(block_size * sizeof(char) + 1);
     // for (int i = 0; i < block_size / 8; i++)
@@ -81,7 +82,7 @@ void read_file(char* filepath, unsigned block_size, int random)
     int fd = 0;
     fd = open(filepath, O_CREAT | O_RDWR | O_SYNC, S_IRWXU);
     if (fd < 0)
-        fprintf(stderr, "Cannot open file: %s", filepath);
+        fprintf(stderr, "Cannot open file: %s\n", filepath);
     
     char* buffer = malloc(block_size);
     for (int i = 0; i < NRROUND; i++)
@@ -155,7 +156,7 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
 
 void thread_test(unsigned lower, unsigned upper)
 {
-    const static unsigned blocksize = 16384; // fixed blocksize
+    const static unsigned blocksize = 16384; // fixed blocksize(16 KB)
     unsigned concurrency;
     printf("Searching for concurrency\n");
     printf("RAM Test:\n");
