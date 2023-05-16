@@ -75,30 +75,6 @@ void write_file(char* filepath, unsigned block_size, int random)
     lseek(fd, 0, SEEK_SET);
     close(fd);
 }
-// void write_file(char* filepath, unsigned block_size, int random)
-// {
-//     const int BUFSIZE = 64;
-//     static char buffer[BUFSIZE] = "This is a 6KB block!";
-//     int fd = 0;  
-//     fd = open(filepath, O_CREAT | O_RDWR | O_SYNC, S_IRWXU);  
-//     if(fd < 0){  
-//         fprintf(stdout, "Error occurred when opening file!");  
-//         return;  
-//     }  
-//     char *buf_ext = (char *)malloc(sizeof(char) * block_size);  
-//     for(int i = 0; i < block_size / BUFSIZE; i++){  
-//         strcat(buf_ext, buffer);  
-//     }  
-//     for(int i = 0; i < NRROUND; i++){  
-//         unsigned writebytes = write(fd, buf_ext, block_size);  
-//         if(random){  
-//             lseek(fd, rand() % ((block_size - 1) * NRROUND), SEEK_SET);  
-//         }  
-//         assert(writebytes == block_size);
-//     }  
-//     lseek(fd, 0, SEEK_SET);  
-//     close(fd);
-// }
 
 void read_file(char* filepath, unsigned block_size, int random)
 {
@@ -130,7 +106,7 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
     const static char* storage[2] = {"ram", "disk"};
     char path[32];
     double interval = 0;
-    long datasize = (NRROUND * concurrency * block_size) / (1024 * 1024);
+    double datasize = (NRROUND * concurrency * block_size) / (double)(1024 * 1024);
     timeval_t start_time, end_time;
 
     printf("Testing: blocksize = %u, concurrency = %u, storage = %s, random = %d\n",
@@ -158,7 +134,7 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
         wait(NULL);
     gettimeofday(&end_time, NULL);
     interval = get_time_left(start_time, end_time) / 1000.0;
-    printf("Test write done: time = %lf, filesize = %ld, throughout = %lf\n", interval, datasize, datasize / interval);
+    printf("Test write done: time = %lf, filesize = %lf, throughput = %lf\n", interval, datasize, datasize / interval);
 
     gettimeofday(&start_time, NULL);
     for (int i = 0; i < concurrency; i++)
@@ -174,25 +150,79 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
         wait(NULL);
     gettimeofday(&end_time, NULL);
     interval = get_time_left(start_time, end_time) / 1000.0;
-    printf("Test read done: time = %lf, filesize = %ld, throughout = %lf\n", interval, datasize, datasize / interval);
+    printf("Test read done: time = %lf, filesize = %lf, throughput = %lf\n", interval, datasize, datasize / interval);
+}
+
+void thread_test(unsigned lower, unsigned upper)
+{
+    const static unsigned blocksize = 16384; // fixed blocksize
+    unsigned concurrency;
+    printf("Searching for concurrency\n");
+    printf("RAM Test:\n");
+    for (concurrency = lower; concurrency < upper; concurrency++)
+    {
+        single_test(concurrency, blocksize, 0, 0);
+    }
+    printf("Disk Test:\n");
+    for (concurrency = lower; concurrency < upper; concurrency++)
+    {
+        single_test(concurrency, blocksize, 0, 1);
+    }
+}
+
+void block_test(unsigned concurrency)
+{
+    const static int nrsize = 6;
+    const static unsigned size[nrsize] = {64, 256, 1024, 4096, 16384, 65536}; //bytes   
+    //unsigned concurrency;
+    printf("Testing different block sizes...\n");
+    printf("RAM Test: Order\n");
+    for (int i = 0; i < nrsize; i++)
+    {
+        single_test(concurrency, size[i], 0, 0);
+    }
+    printf("RAM Test: Random\n");
+    for (int i = 0; i < nrsize; i++)
+    {
+        single_test(concurrency, size[i], 1, 0);
+    }
+    printf("Disk Test: Order\n");
+    for (int i = 0; i < nrsize; i++)
+    {
+        single_test(concurrency, size[i], 0, 1);
+    }
+    printf("Disk Test: Random\n");
+    for (int i = 0; i < nrsize; i++)
+    {
+        single_test(concurrency, size[i], 1, 1);
+    }
 }
 
 int main(int argc, char** argv)
 {
-    if (argc != 4){
-        fprintf(stderr, "Usage: utils <NRProcess> <Blocksize> <random>\n");
+    if (argc != 3 && argc != 4){
+        fprintf(stderr, "Usage: utils -c <lower> <upper> | utils -b <concurrency>\n");
         return 0;
     }
-    unsigned concurrency = atoi(argv[1]);
-    unsigned blocksize  = atoi(argv[2]);
-    int random = atoi(argv[3]);
-    filesize = FILEROUNDUP / concurrency;
-    for (int i = 5 ; i < concurrency; i++)
+    if (!strcmp(argv[1], "-c"))
     {
-        printf("RAM Test:\n");
-        single_test(i, blocksize, random, 0);
-        printf("Disk Test:\n");
-        single_test(i, blocksize, random, 1);
+        if (argc != 4)
+        {
+            fprintf(stderr, "Usage: utils -c <lower> <upper>\n");
+            return 0;
+        }
+        thread_test(atoi(argv[2]), atoi(argv[3]));
     }
+    else if (!strcmp(argv[1], "-b"))
+    {
+        if (argc != 3)
+        {
+            fprintf(stderr, "Usage: utils -b <concurrency>\n");
+            return 0;
+        }
+        block_test(atoi(argv[2]));
+    }
+    else
+        fprintf(stderr, "Usage: utils -c <lower> <upper> | utils -b <concurrency>\n");
     return 0;
 }
