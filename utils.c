@@ -15,12 +15,12 @@
 #define PFILEROUNDUP 60
 #define PFILEROUNDUPBYTES (PFILEROUNDUP * 1024 * 1024)
 const static char* path_format[2] = {"/root/myram/ram_%d", "/usr/disk_%d"};
-static unsigned filesize; // file size (MB)
+//static unsigned filesize; // file size (MB)
 
 void read_file(char* filepath, unsigned block_size, int random);
 void write_file(char* filepath, unsigned block_size, int random);
 void init_file(char* filepath, unsigned sz);
-void single_test(unsigned concurrency, unsigned block_size, int random, int disk);
+void single_test(unsigned concurrency, unsigned block_size, int random, int disk, unsigned filesize);
 typedef struct timeval timeval_t;
 double get_time_left(timeval_t st, timeval_t ed)
 {
@@ -35,7 +35,7 @@ void init_file(char* filepath, unsigned sz)
         fprintf(stderr, "Cannot create file: %s", filepath);
     char junk[1024];
     memset(junk, 5, 1024);
-    for (int i = 0; i < PFILEROUNDUP * 1024; i++)
+    for (int i = 0; i < sz * 1024; i++)
     {
         unsigned write_bytes = write(fd, junk, 1024);
         if (write_bytes != 1024)
@@ -101,7 +101,7 @@ void read_file(char* filepath, unsigned block_size, int random)
     close(fd);
 }
 
-void single_test(unsigned concurrency, unsigned block_size, int random, int disk)
+void single_test(unsigned concurrency, unsigned block_size, int random, int disk, unsigned filesize)
 {
     srand(time(0));
     const static char* storage[2] = {"ram", "disk"};
@@ -156,18 +156,21 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
 
 void thread_test(unsigned lower, unsigned upper)
 {
-    const static unsigned blocksize = 16384; // fixed blocksize(16 KB)
+    const static unsigned blocksize = 4096; // fixed blocksize(16 KB)
     unsigned concurrency;
+    unsigned filesize;
     printf("Searching for concurrency\n");
     printf("RAM Test:\n");
     for (concurrency = lower; concurrency < upper; concurrency++)
     {
-        single_test(concurrency, blocksize, 0, 0);
+        filesize = FILEROUNDUP / concurrency;
+        single_test(concurrency, blocksize, 0, 0, filesize);
     }
     printf("Disk Test:\n");
     for (concurrency = lower; concurrency < upper; concurrency++)
     {
-        single_test(concurrency, blocksize, 0, 1);
+        filesize = FILEROUNDUP / concurrency;
+        single_test(concurrency, blocksize, 0, 1, filesize);
     }
 }
 
@@ -180,22 +183,22 @@ void block_test(unsigned concurrency)
     printf("RAM Test: Order\n");
     for (int i = 0; i < nrsize; i++)
     {
-        single_test(concurrency, size[i], 0, 0);
+        single_test(concurrency, size[i], 0, 0, PFILEROUNDUP);
     }
     printf("RAM Test: Random\n");
     for (int i = 0; i < nrsize; i++)
     {
-        single_test(concurrency, size[i], 1, 0);
+        single_test(concurrency, size[i], 1, 0, PFILEROUNDUP);
     }
     printf("Disk Test: Order\n");
     for (int i = 0; i < nrsize; i++)
     {
-        single_test(concurrency, size[i], 0, 1);
+        single_test(concurrency, size[i], 0, 1, PFILEROUNDUP);
     }
     printf("Disk Test: Random\n");
     for (int i = 0; i < nrsize; i++)
     {
-        single_test(concurrency, size[i], 1, 1);
+        single_test(concurrency, size[i], 1, 1, PFILEROUNDUP);
     }
 }
 
