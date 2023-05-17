@@ -20,7 +20,7 @@ const static char* path_format[2] = {"/root/myram/ram_%d", "/usr/disk_%d"};
 void read_file(int fd, unsigned block_size, int random);
 void write_file(int fd, unsigned block_size, int random);
 int init_file(char* filepath, unsigned sz);
-void single_test(unsigned concurrency, unsigned block_size, int random, int disk, unsigned filesize);
+void single_test(unsigned concurrency, unsigned block_size, int random, int disk, int file[]);
 typedef struct timeval  timeval_t;
 double get_time_left(timeval_t st, timeval_t ed)
 {
