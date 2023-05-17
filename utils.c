@@ -21,10 +21,10 @@ void read_file(int fd, unsigned block_size, int random);
 void write_file(int fd, unsigned block_size, int random);
 int init_file(char* filepath, unsigned sz);
 void single_test(unsigned concurrency, unsigned block_size, int random, int disk, unsigned filesize);
-typedef struct timespec  timeval_t;
+typedef struct timeval  timeval_t;
 double get_time_left(timeval_t st, timeval_t ed)
 {
-    return (ed.tv_nsec - st.tv_nsec) / 1e9 + (ed.tv_sec - st.tv_sec);
+    return (ed.tv_usec - st.tv_usec) / 1e6 + (ed.tv_sec - st.tv_sec);
 }
 
 int init_file(char* filepath, unsigned sz)
@@ -133,7 +133,8 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
     // interval = get_time_left(start_time, end_time) / 1000.0;
     // printf("Test write done: time = %lf, filesize = %lf, throughput = %lf\n", interval, datasize, datasize / interval);
 
-    clock_gettime(CLOCK_MONOTONIC, &start_time);
+    //clock_gettime(CLOCK_MONOTONIC, &start_time);
+    gettimeofday(&start_time, NULL);
     for (int i = 0; i < concurrency; i++)
     {
         if (fork() == 0)
@@ -144,7 +145,8 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
     }
     for (int i = 0; i < concurrency; i++)
         wait(NULL);
-    clock_gettime(CLOCK_MONOTONIC, &end_time);
+    gettimeofday(&end_time, NULL);
+    //clock_gettime(CLOCK_MONOTONIC, &end_time);
     interval = get_time_left(start_time, end_time);
     printf("Test read done: time = %lf, filesize = %lf, throughput = %lf\n", interval, datasize, datasize / interval);
 }
