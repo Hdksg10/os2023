@@ -121,21 +121,21 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
     }
     printf("File init done\n");
 
-    gettimeofday(&start_time, NULL);
-    for (int i = 0; i < concurrency; i++)
-    {
-        if (fork() == 0)
-        {
-            sprintf(path, path_format[disk], i);
-            write_file(path, block_size, random);
-            exit(0);
-        }
-    }
-    for (int i = 0; i < concurrency; i++)
-        wait(NULL);
-    gettimeofday(&end_time, NULL);
-    interval = get_time_left(start_time, end_time) / 1000.0;
-    printf("Test write done: time = %lf, filesize = %lf, throughput = %lf\n", interval, datasize, datasize / interval);
+    // gettimeofday(&start_time, NULL);
+    // for (int i = 0; i < concurrency; i++)
+    // {
+    //     if (fork() == 0)
+    //     {
+    //         sprintf(path, path_format[disk], i);
+    //         write_file(path, block_size, random);
+    //         exit(0);
+    //     }
+    // }
+    // for (int i = 0; i < concurrency; i++)
+    //     wait(NULL);
+    // gettimeofday(&end_time, NULL);
+    // interval = get_time_left(start_time, end_time) / 1000.0;
+    // printf("Test write done: time = %lf, filesize = %lf, throughput = %lf\n", interval, datasize, datasize / interval);
 
     gettimeofday(&start_time, NULL);
     for (int i = 0; i < concurrency; i++)
