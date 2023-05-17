@@ -93,26 +93,19 @@ void read_file(int fd, unsigned block_size, int random)
     close(fd);
 }
 
-void single_test(unsigned concurrency, unsigned block_size, int random, int disk, unsigned filesize)
+void single_test(unsigned concurrency, unsigned block_size, int random, int disk, int file[])
 {
     srand(time(0));
     const static char* storage[2] = {"ram", "disk"};
-    char path[32];
     double interval = 0;
     double datasize = (NRROUND * concurrency * block_size) / (double)(1024 * 1024);
-    int file[concurrency];
+
     timeval_t start_time, end_time;
 
     printf("Testing: blocksize = %u, concurrency = %u, storage = %s, random = %d\n",
             block_size, concurrency, storage[disk], random);
     
-    /* init file */
-    for (int i = 0; i < concurrency; i++)
-    {
-        sprintf(path, path_format[disk], i);
-        file[i] = init_file(path, filesize);
-    }
-    printf("File init done\n");
+
 
 
     //clock_gettime(CLOCK_MONOTONIC, &start_time);
@@ -172,28 +165,43 @@ void thread_test(unsigned lower, unsigned upper)
 void block_test(unsigned concurrency)
 {
     const static int nrsize = 6;
-    const static unsigned size[nrsize] = {64, 256, 1024, 4096, 16384, 65536}; //bytes   
+    const static unsigned size[nrsize] = {64, 256, 1024, 4096, 16384, 65536}; //bytes  
+    char path[32]; 
+    int file[concurrency];
     //unsigned concurrency;
     printf("Testing different block sizes...\n");
+    /* init file */
+    for (int i = 0; i < concurrency; i++)
+    {
+        sprintf(path, path_format[0], i);
+        file[i] = init_file(path, PFILEROUNDUP);
+    }
+    printf("File init done\n");
     printf("RAM Test: Order\n");
     for (int i = 0; i < nrsize; i++)
     {
-        single_test(concurrency, size[i], 0, 0, PFILEROUNDUP);
+        single_test(concurrency, size[i], 0, 0, file);
     }
     printf("RAM Test: Random\n");
     for (int i = 0; i < nrsize; i++)
     {
-        single_test(concurrency, size[i], 1, 0, PFILEROUNDUP);
+        single_test(concurrency, size[i], 1, 0, file);
+    }
+    /* init file */
+    for (int i = 0; i < concurrency; i++)
+    {
+        sprintf(path, path_format[1], i);
+        file[i] = init_file(path, PFILEROUNDUP);
     }
     printf("Disk Test: Order\n");
     for (int i = 0; i < nrsize; i++)
     {
-        single_test(concurrency, size[i], 0, 1, PFILEROUNDUP);
+        single_test(concurrency, size[i], 0, 1, file);
     }
     printf("Disk Test: Random\n");
     for (int i = 0; i < nrsize; i++)
     {
-        single_test(concurrency, size[i], 1, 1, PFILEROUNDUP);
+        single_test(concurrency, size[i], 1, 1, file);
     }
 }
 
