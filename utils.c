@@ -41,7 +41,7 @@ int init_file(char* filepath, unsigned sz)
         if (write_bytes != 1024)
         {
             fprintf(stderr, "Error occurred when init file: %s\n", filepath);
-            return;
+            return -1;
         }
     }
     lseek(fd, 0, SEEK_SET);
