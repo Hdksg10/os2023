@@ -12,7 +12,7 @@
 #define NRROUND 1024
 #define FILEROUNDUP 1024
 #define FILEROUNDUPBYTES (FILEROUNDUP * 1024 * 1024) // total file size (1024MB)
-#define PFILEROUNDUP 60
+#define PFILEROUNDUP 70
 #define PFILEROUNDUPBYTES (PFILEROUNDUP * 1024 * 1024)
 const static char* path_format[2] = {"/root/myram/ram_%d", "/usr/disk_%d"};
 //static unsigned filesize; // file size (MB)
