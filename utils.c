@@ -138,7 +138,7 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
     for (int i = 0; i < concurrency; i++)
         wait(NULL);
     gettimeofday(&end_time, NULL);
-    interval = get_time_left(start_time, end_time) / 1000.0;
+    interval = get_time_left(start_time, end_time);
     printf("Test write done: time = %lf, filesize = %lf, throughput = %lf\n", interval, datasize, datasize / interval);
 }
 
