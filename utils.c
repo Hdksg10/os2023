@@ -70,8 +70,6 @@ void write_file(int fd, unsigned block_size, int random)
         }
         unsigned write_bytes = write(fd, buffer, block_size);
         assert(write_bytes == block_size);
-        // if (write_bytes < block_size)
-        //     i--;
     }
     free(buffer);
     lseek(fd, 0, SEEK_SET);
@@ -89,8 +87,6 @@ void read_file(int fd, unsigned block_size, int random)
         }
         unsigned read_bytes = read(fd, buffer, block_size);
         assert(read_bytes == block_size);
-        // if (read_bytes < block_size)
-        //     i--;
     }
     free(buffer);
     lseek(fd, 0, SEEK_SET);
@@ -118,20 +114,6 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
     }
     printf("File init done\n");
 
-    // gettimeofday(&start_time, NULL);
-    // for (int i = 0; i < concurrency; i++)
-    // {
-    //     if (fork() == 0)
-    //     {
-    //         write_file(file[i], block_size, random);
-    //         exit(0);
-    //     }
-    // }
-    // for (int i = 0; i < concurrency; i++)
-    //     wait(NULL);
-    // gettimeofday(&end_time, NULL);
-    // interval = get_time_left(start_time, end_time) / 1000.0;
-    // printf("Test write done: time = %lf, filesize = %lf, throughput = %lf\n", interval, datasize, datasize / interval);
 
     //clock_gettime(CLOCK_MONOTONIC, &start_time);
     gettimeofday(&start_time, NULL);
@@ -149,6 +131,22 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
     //clock_gettime(CLOCK_MONOTONIC, &end_time);
     interval = get_time_left(start_time, end_time);
     printf("Test read done: time = %lf, filesize = %lf, throughput = %lf\n", interval, datasize, datasize / interval);
+
+    
+    gettimeofday(&start_time, NULL);
+    for (int i = 0; i < concurrency; i++)
+    {
+        if (fork() == 0)
+        {
+            write_file(file[i], block_size, random);
+            exit(0);
+        }
+    }
+    for (int i = 0; i < concurrency; i++)
+        wait(NULL);
+    gettimeofday(&end_time, NULL);
+    interval = get_time_left(start_time, end_time) / 1000.0;
+    printf("Test write done: time = %lf, filesize = %lf, throughput = %lf\n", interval, datasize, datasize / interval);
 }
 
 void thread_test(unsigned lower, unsigned upper)
