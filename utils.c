@@ -163,13 +163,13 @@ void thread_test(unsigned lower, unsigned upper)
     printf("RAM Test:\n");
     for (concurrency = lower; concurrency < upper; concurrency++)
     {
-        filesize = FILEROUNDUP / concurrency;
+        filesize = PFILEROUNDUP;
         single_test(concurrency, blocksize, 0, 0, filesize);
     }
     printf("Disk Test:\n");
     for (concurrency = lower; concurrency < upper; concurrency++)
     {
-        filesize = FILEROUNDUP / concurrency;
+        filesize = PFILEROUNDUP;
         single_test(concurrency, blocksize, 0, 1, filesize);
     }
 }
