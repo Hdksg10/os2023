@@ -15,7 +15,6 @@
 #define PFILEROUNDUP 70
 #define PFILEROUNDUPBYTES (PFILEROUNDUP * 1024 * 1024)
 const static char* path_format[2] = {"/root/myram/ram_%d", "/usr/disk_%d"};
-//static unsigned filesize; // file size (MB)
 
 void read_file(int fd, unsigned block_size, int random);
 void write_file(int fd, unsigned block_size, int random);
@@ -50,18 +49,8 @@ int init_file(char* filepath, unsigned sz)
 
 void write_file(int fd, unsigned block_size, int random)
 {
-    //static char byte8[9] = "8bytestr";
-    // int fd = 0;
-    // fd = open(filepath, O_CREAT | O_RDWR | O_SYNC, S_IRWXU);
-    // if (fd < 0)
-    //     fprintf(stderr, "Cannot open file: %s\n", filepath);
     
     char* buffer = malloc(block_size * sizeof(char) + 1);
-    // for (int i = 0; i < block_size / 8; i++)
-    // {
-    //     strcat(buffer, byte8);
-    // }
-    //printf("%d\n", strlen(buffer));
     for (int i = 0; i < NRROUND; i++)
     {
         if (random)
@@ -105,7 +94,6 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
     printf("Testing: blocksize = %u, concurrency = %u, storage = %s, random = %d\n",
             block_size, concurrency, storage[disk], random);
     
-    //clock_gettime(CLOCK_MONOTONIC, &start_time);
     gettimeofday(&start_time, NULL);
     for (int i = 0; i < concurrency; i++)
     {
@@ -118,11 +106,9 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
     for (int i = 0; i < concurrency; i++)
         wait(NULL);
     gettimeofday(&end_time, NULL);
-    //clock_gettime(CLOCK_MONOTONIC, &end_time);
     interval = get_time_left(start_time, end_time);
     printf("Test read done: time = %lf, filesize = %lf, throughput = %lf\n", interval, datasize, datasize / interval);
 
-    
     gettimeofday(&start_time, NULL);
     for (int i = 0; i < concurrency; i++)
     {
@@ -139,7 +125,8 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
     printf("Test write done: time = %lf, filesize = %lf, throughput = %lf\n", interval, datasize, datasize / interval);
 }
 
-void thread_test(unsigned lower, unsigned upper)
+// NOTE: deprecated
+void concurrency_test(unsigned lower, unsigned upper)
 {
     const static unsigned blocksize = 4096; // fixed blocksize(16 KB)
     unsigned concurrency;
@@ -165,7 +152,6 @@ void block_test(unsigned concurrency)
     const static unsigned size[nrsize] = {64, 256, 1024, 4096, 16384, 65536}; //bytes  
     char path[32]; 
     int file[concurrency];
-    //unsigned concurrency;
     printf("Testing different block sizes...\n");
     /* init file */
     for (int i = 0; i < concurrency; i++)
@@ -215,7 +201,7 @@ int main(int argc, char** argv)
             fprintf(stderr, "Usage: utils -c <lower> <upper>\n");
             return 0;
         }
-        thread_test(atoi(argv[2]), atoi(argv[3]));
+        concurrency_test(atoi(argv[2]), atoi(argv[3]));
     }
     else if (!strcmp(argv[1], "-b"))
     {
