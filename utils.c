@@ -105,9 +105,6 @@ void single_test(unsigned concurrency, unsigned block_size, int random, int disk
     printf("Testing: blocksize = %u, concurrency = %u, storage = %s, random = %d\n",
             block_size, concurrency, storage[disk], random);
     
-
-
-
     //clock_gettime(CLOCK_MONOTONIC, &start_time);
     gettimeofday(&start_time, NULL);
     for (int i = 0; i < concurrency; i++)
